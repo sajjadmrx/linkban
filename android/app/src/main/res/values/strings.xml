@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Yadban</string>
+    <string name="title_activity_main">Yadban</string>
+    <string name="package_name">com.revisit.app</string>
+    <string name="custom_url_scheme">com.revisit.app</string>
+</resources>
