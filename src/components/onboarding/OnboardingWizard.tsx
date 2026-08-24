@@ -8,6 +8,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n'
+import { notificationService } from '@/lib/notifications'
 import { en } from '@/locales/en'
 import { fa } from '@/locales/fa'
 import type { Language } from '@/types/link'
@@ -42,7 +43,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     setLanguage(lang)
   }
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
+    try {
+      await notificationService.requestPermissions()
+    } catch {}
     onComplete(selectedLang)
   }
 
