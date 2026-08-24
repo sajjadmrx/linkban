@@ -190,7 +190,7 @@ export const SecretAuthModal: React.FC<SecretAuthModalProps> = ({
               key={digit}
               type="button"
               onClick={() => handleNumberClick(digit)}
-              className="btn btn-outline border-base-300 bg-base-200/60 hover:bg-base-300 h-14 w-14 rounded-2xl text-lg font-bold text-base-content active:scale-95 transition-transform"
+              className="flex items-center justify-center border border-base-300 bg-base-200/60 hover:bg-base-200 h-14 w-14 rounded-2xl text-lg font-bold text-base-content active:scale-95 transition-transform cursor-pointer"
             >
               {formatNumber(Number(digit))}
             </button>
@@ -212,7 +212,7 @@ export const SecretAuthModal: React.FC<SecretAuthModalProps> = ({
           <button
             type="button"
             onClick={() => handleNumberClick('0')}
-            className="btn btn-outline border-base-300 bg-base-200/60 hover:bg-base-300 h-14 w-14 rounded-2xl text-lg font-bold text-base-content active:scale-95 transition-transform"
+            className="flex items-center justify-center border border-base-300 bg-base-200/60 hover:bg-base-200 h-14 w-14 rounded-2xl text-lg font-bold text-base-content active:scale-95 transition-transform cursor-pointer"
           >
             {formatNumber(0)}
           </button>

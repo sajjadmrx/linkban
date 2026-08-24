@@ -152,16 +152,16 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
                         setPinModalMode('change')
                         setPinModalOpen(true)
                       }}
-                      className="btn btn-outline btn-xs rounded-lg text-[11px] font-bold"
+                      className="flex items-center justify-center px-2.5 h-7 rounded-lg border border-base-300 bg-base-200/80 hover:bg-base-200 text-[11px] font-bold text-base-content transition-colors cursor-pointer"
                     >
                       {t.secret.changePin}
                     </button>
                     <button
                       type="button"
                       onClick={handleRemovePin}
-                      className="btn btn-ghost btn-xs text-error text-[11px]"
+                      className="btn btn-ghost btn-circle btn-xs text-error hover:bg-error/10"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ) : (
@@ -316,10 +316,10 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
                       key={item.key}
                       type="button"
                       onClick={() => handleUpdate({ theme: item.key })}
-                      className={`btn btn-xs h-10 flex items-center justify-center gap-1.5 rounded-xl font-bold ${
+                      className={`h-10 flex items-center justify-center gap-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         isSelected
-                          ? 'btn-primary text-white'
-                          : 'btn-outline border-base-300 bg-base-100 text-base-content'
+                          ? 'bg-primary text-white shadow-xs'
+                          : 'border border-base-300 bg-base-200/60 hover:bg-base-200 text-base-content'
                       }`}
                     >
                       <Icon className="h-3.5 w-3.5" />
@@ -336,8 +336,8 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { code: 'fa' as Language, label: 'فارسی', sub: 'راست‌به‌چپ' },
-                  { code: 'en' as Language, label: 'English', sub: 'Left-to-right' },
+                  { code: 'fa' as Language, label: 'فارسی', sub: 'فارسی' },
+                  { code: 'en' as Language, label: 'English', sub: 'English' },
                 ].map((item) => {
                   const isSelected = language === item.code
                   return (
@@ -345,10 +345,10 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
                       key={item.code}
                       type="button"
                       onClick={() => handleLanguageChange(item.code)}
-                      className={`flex items-center justify-between p-2.5 rounded-xl border text-start transition-all ${
+                      className={`flex items-center justify-between p-2.5 rounded-xl border text-start transition-all cursor-pointer ${
                         isSelected
                           ? 'border-primary bg-primary/10 text-primary font-bold'
-                          : 'border-base-300/60 bg-base-200/50 text-base-content'
+                          : 'border-base-300 bg-base-200/50 hover:bg-base-200 text-base-content'
                       }`}
                     >
                       <div>
@@ -366,18 +366,18 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
               <button
                 type="button"
                 onClick={onExportData}
-                className="btn btn-outline btn-xs h-9 text-xs font-semibold rounded-xl gap-1.5 bg-base-100"
+                className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl border border-base-300 bg-base-200/70 hover:bg-base-200 text-xs font-semibold text-base-content transition-colors cursor-pointer"
               >
-                <Download className="h-3.5 w-3.5" />
+                <Download className="h-3.5 w-3.5 text-base-content/70" />
                 <span>{t.settings.exportData}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="btn btn-outline btn-xs h-9 text-xs font-semibold rounded-xl gap-1.5 bg-base-100"
+                className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl border border-base-300 bg-base-200/70 hover:bg-base-200 text-xs font-semibold text-base-content transition-colors cursor-pointer"
               >
-                <Upload className="h-3.5 w-3.5" />
+                <Upload className="h-3.5 w-3.5 text-base-content/70" />
                 <span>{t.settings.importData}</span>
               </button>
               <input

@@ -44,8 +44,8 @@ export const ReminderPicker: React.FC<ReminderPickerProps> = ({
               onClick={() => onChange(p.minutes)}
               className={`btn btn-sm h-10 text-xs font-semibold rounded-xl transition-all ${
                 isSelected
-                  ? 'btn-primary shadow-xs font-bold'
-                  : 'btn-outline border-base-300 bg-base-100 text-base-content hover:bg-base-200'
+                  ? 'btn-primary shadow-xs font-bold text-white'
+                  : 'border border-base-300 bg-base-200/60 text-base-content hover:bg-base-200'
               }`}
             >
               {t.intervals[p.labelKey]}
@@ -58,8 +58,8 @@ export const ReminderPicker: React.FC<ReminderPickerProps> = ({
           onClick={() => setCustomOpen(true)}
           className={`btn btn-sm h-10 text-xs font-semibold rounded-xl transition-all ${
             !isPreset
-              ? 'btn-primary shadow-xs font-bold'
-              : 'btn-outline border-base-300 bg-base-100 text-base-content hover:bg-base-200'
+              ? 'btn-primary shadow-xs font-bold text-white'
+              : 'border border-base-300 bg-base-200/60 text-base-content hover:bg-base-200'
           }`}
         >
           {!isPreset

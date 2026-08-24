@@ -80,7 +80,9 @@ export const CustomReminderSheet: React.FC<CustomReminderSheetProps> = ({
                 type="button"
                 onClick={() => setUnit(u)}
                 className={`btn btn-sm h-10 ${
-                  unit === u ? 'btn-primary font-bold' : 'btn-outline border-base-300'
+                  unit === u
+                    ? 'btn-primary font-bold text-white shadow-xs'
+                    : 'border border-base-300 bg-base-200/60 text-base-content hover:bg-base-200'
                 }`}
               >
                 {t.add[u]}

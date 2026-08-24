@@ -181,7 +181,7 @@ export const AddLinkSheet: React.FC<AddLinkSheetProps> = ({
               <button
                 type="button"
                 onClick={handlePasteClipboard}
-                className="btn btn-outline border-base-300 bg-base-100 btn-sm h-12 px-3.5 rounded-xl font-bold gap-1.5 shrink-0 text-primary"
+                className="flex items-center gap-1.5 h-12 px-3.5 rounded-xl font-bold border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 shrink-0 transition-colors text-xs cursor-pointer"
               >
                 <Clipboard className="h-4 w-4" />
                 <span>{t.add.pasteClipboard}</span>
@@ -251,7 +251,7 @@ export const AddLinkSheet: React.FC<AddLinkSheetProps> = ({
                     onClose()
                     onOpenExisting(isDuplicate)
                   }}
-                  className="btn btn-xs btn-outline bg-base-100 rounded-lg font-semibold gap-1"
+                  className="flex items-center gap-1 h-7 px-2.5 rounded-lg border border-base-300 bg-base-100 hover:bg-base-200 text-xs font-semibold text-base-content transition-colors cursor-pointer"
                 >
                   <ExternalLink className="h-3 w-3" />
                   {t.add.openExisting}
