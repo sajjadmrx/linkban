@@ -10,7 +10,8 @@ import java.util.regex.Pattern;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        registerPlugin(WidgetBridgePlugin.class);
+        registerPlugin(ShareBridgePlugin.class);
+        registerPlugin(BiometricAuthPlugin.class);
         super.onCreate(savedInstanceState);
         handleIncomingIntent(getIntent());
     }
@@ -34,9 +35,9 @@ public class MainActivity extends BridgeActivity {
                 if (sharedText != null) {
                     String extractedUrl = extractUrl(sharedText);
                     if (extractedUrl != null) {
-                        WidgetBridgePlugin.setPendingSharedUrl(extractedUrl);
+                        ShareBridgePlugin.setPendingSharedUrl(extractedUrl);
                     } else {
-                        WidgetBridgePlugin.setPendingSharedUrl(sharedText.trim());
+                        ShareBridgePlugin.setPendingSharedUrl(sharedText.trim());
                     }
                 }
             }

@@ -1,4 +1,4 @@
-export type ReminderPreset = 30 | 60 | 120 | 180 | 360 | 720 | 1440 | 'custom'
+export type ReminderPreset = 0 | 30 | 60 | 120 | 180 | 360 | 720 | 1440 | 'custom'
 
 export interface SavedLink {
   id: string
@@ -14,10 +14,14 @@ export interface SavedLink {
   doneAt?: number
   notificationId: number
   notes?: string
+  isSecret?: boolean
+  openCount?: number
+  lastOpenedAt?: number
 }
 
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type Language = 'en' | 'fa'
+export type AppTab = 'queue' | 'history' | 'stats'
 
 export interface AppSettings {
   defaultInterval: number
@@ -28,19 +32,8 @@ export interface AppSettings {
   theme: ThemeMode
   language: Language
   hapticsEnabled: boolean
+  secretPasscode?: string
+  secretBiometricsEnabled?: boolean
 }
 
-export type LinkFilter = 'active' | 'all' | 'paused' | 'done'
-
-export interface WidgetPayload {
-  links: Array<{
-    id: string
-    title: string
-    domain: string
-    url: string
-    nextReminderAt: number
-    reminderInterval: number
-    isPaused: boolean
-  }>
-  updatedAt: number
-}
+export type LinkFilter = 'active' | 'all' | 'paused' | 'done' | 'secret'

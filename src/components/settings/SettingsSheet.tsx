@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   Bell,
   Moon,
@@ -11,8 +11,13 @@ import {
   ShieldCheck,
   Check,
   X,
+  Lock,
+  KeyRound,
+  Fingerprint,
 } from 'lucide-react'
 import { ReminderPicker } from '@/components/links/ReminderPicker'
+import { SecretAuthModal } from '@/components/secret/SecretAuthModal'
+import { biometricService } from '@/lib/biometrics'
 import { useI18n } from '@/lib/i18n'
 import type { AppSettings, ThemeMode, Language } from '@/types/link'
 import { toast } from 'sonner'
@@ -38,7 +43,14 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
 }) => {
   const { t, language, setLanguage } = useI18n()
   const [clearDialogOpen, setClearDialogOpen] = useState(false)
+  const [pinModalOpen, setPinModalOpen] = useState(false)
+  const [pinModalMode, setPinModalMode] = useState<'setup' | 'change'>('setup')
+  const [hasBiometrics, setHasBiometrics] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    biometricService.isAvailable().then(setHasBiometrics)
+  }, [])
 
   if (!open) return null
 
@@ -50,6 +62,15 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
   const handleLanguageChange = (newLang: Language) => {
     setLanguage(newLang)
     handleUpdate({ language: newLang })
+  }
+
+  const handleSavePin = async (pin: string) => {
+    await handleUpdate({ secretPasscode: pin })
+  }
+
+  const handleRemovePin = async () => {
+    await handleUpdate({ secretPasscode: undefined })
+    toast.success(t.secret.pinRemovedSuccess)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +95,7 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
     <>
       <div className="bottom-sheet-backdrop" onClick={onClose}>
         <div
-          className="bottom-sheet-content max-w-md mx-auto p-5 space-y-5 text-start"
+          className="bottom-sheet-content max-w-md mx-auto p-5 space-y-4 text-start"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="mx-auto -mt-2 h-1 w-10 rounded-full bg-base-300" />
@@ -104,7 +125,80 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
               />
             </div>
 
-            <div className="rounded-2xl bg-base-200/50 p-3.5 space-y-3.5 border border-base-300/40">
+            <div className="rounded-2xl bg-base-200/50 p-3.5 space-y-3 border border-base-300/40">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5 pe-4">
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-bold text-base-content">
+                      {t.secret.title}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#8C8885] dark:text-[#9E9792]">
+                    {t.secret.tagline}
+                  </p>
+                </div>
+                {settings.secretPasscode ? (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPinModalMode('change')
+                        setPinModalOpen(true)
+                      }}
+                      className="btn btn-outline btn-xs rounded-lg text-[11px] font-bold"
+                    >
+                      {t.secret.changePin}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRemovePin}
+                      className="btn btn-ghost btn-xs text-error text-[11px]"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPinModalMode('setup')
+                      setPinModalOpen(true)
+                    }}
+                    className="btn btn-primary btn-xs rounded-lg text-[11px] font-bold text-white"
+                  >
+                    {t.secret.setPin}
+                  </button>
+                )}
+              </div>
+
+              {hasBiometrics && (
+                <>
+                  <div className="divider my-0.5 opacity-40" />
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5 pe-4">
+                      <div className="flex items-center gap-2">
+                        <Fingerprint className="h-4 w-4 text-base-content/60" />
+                        <span className="text-xs font-bold text-base-content">
+                          {t.secret.biometrics}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#8C8885] dark:text-[#9E9792]">
+                        {t.secret.biometricsDesc}
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={settings.secretBiometricsEnabled ?? true}
+                      onChange={(e) => handleUpdate({ secretBiometricsEnabled: e.target.checked })}
+                      className="toggle toggle-primary toggle-sm"
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="divider my-0.5 opacity-40" />
+
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5 pe-4">
                   <div className="flex items-center gap-2">
@@ -236,8 +330,8 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { code: 'fa' as Language, label: 'فارسی' },
-                  { code: 'en' as Language, label: 'English' },
+                  { code: 'fa' as Language, label: 'فارسی', sub: 'راست‌به‌چپ' },
+                  { code: 'en' as Language, label: 'English', sub: 'Left-to-right' },
                 ].map((item) => {
                   const isSelected = language === item.code
                   return (
@@ -253,6 +347,7 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
                     >
                       <div>
                         <p className="text-xs font-bold">{item.label}</p>
+                        <p className="text-[10px] opacity-60">{item.sub}</p>
                       </div>
                       {isSelected && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                     </button>
@@ -304,6 +399,15 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
           </div>
         </div>
       </div>
+
+      <SecretAuthModal
+        open={pinModalOpen}
+        mode={pinModalMode}
+        settings={settings}
+        onClose={() => setPinModalOpen(false)}
+        onAuthenticated={() => setPinModalOpen(false)}
+        onSavePasscode={handleSavePin}
+      />
 
       {clearDialogOpen && (
         <div className="bottom-sheet-backdrop z-60" onClick={() => setClearDialogOpen(false)}>

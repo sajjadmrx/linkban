@@ -4,4 +4,9 @@
     <string name="title_activity_main">یادبان</string>
     <string name="package_name">com.revisit.app</string>
     <string name="custom_url_scheme">com.revisit.app</string>
+    <string name="save_to_yadban">ذخیره در یادبان</string>
+    <string name="toast_saved">یادبان: ذخیره شد ✓ (%1$s)</string>
+    <string name="toast_no_link_found">یادبان: لینکی در متن انتخاب‌شده یافت نشد</string>
+    <string name="toast_already_saved">یادبان: این لینک قبلاً ذخیره شده است</string>
+    <string name="toast_save_error">یادبان: خطا در ذخیره لینک</string>
 </resources>

@@ -3,6 +3,10 @@ import { Browser } from '@capacitor/browser'
 import type { SavedLink, AppSettings } from '@/types/link'
 
 export function computeNextReminderTime(intervalMinutes: number, fromTimestamp: number = Date.now(), settings?: AppSettings): number {
+  if (intervalMinutes <= 0) {
+    return 0
+  }
+
   let targetTime = fromTimestamp + intervalMinutes * 60 * 1000
 
   if (settings?.quietHoursEnabled && settings.quietHoursStart && settings.quietHoursEnd) {
@@ -83,7 +87,7 @@ export const notificationService = {
     try {
       await this.cancelReminder(link.notificationId)
 
-      if (link.isPaused || link.isDone) {
+      if (link.isPaused || link.isDone || link.reminderInterval <= 0 || reminderAt <= 0) {
         return
       }
 

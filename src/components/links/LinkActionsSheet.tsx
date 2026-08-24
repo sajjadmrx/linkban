@@ -9,6 +9,10 @@ import {
   Share2,
   Copy,
   FileText,
+  Lock,
+  RotateCcw,
+  Eye,
+  Bookmark,
 } from 'lucide-react'
 import { CustomReminderSheet } from './CustomReminderSheet'
 import { useI18n } from '@/lib/i18n'
@@ -24,9 +28,11 @@ interface LinkActionsSheetProps {
   onUpdateNote: (link: SavedLink, note: string) => void
   onTogglePause: (link: SavedLink) => void
   onMarkDone: (link: SavedLink) => void
+  onRestore?: (link: SavedLink) => void
   onSnooze: (link: SavedLink, minutes: number) => void
   onShare: (link: SavedLink) => void
   onDelete: (linkId: string) => void
+  onToggleSecret?: (link: SavedLink) => void
 }
 
 export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
@@ -38,14 +44,16 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
   onUpdateNote,
   onTogglePause,
   onMarkDone,
+  onRestore,
   onSnooze,
   onShare,
   onDelete,
+  onToggleSecret,
 }) => {
-  const { t, formatInterval, formatNextReminder } = useI18n()
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
-  const [snoozePickerOpen, setSnoozePickerOpen] = useState(false)
+  const { t, formatNumber, formatInterval, formatNextReminder } = useI18n()
   const [changeReminderOpen, setChangeReminderOpen] = useState(false)
+  const [snoozePickerOpen, setSnoozePickerOpen] = useState(false)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const [noteEditorOpen, setNoteEditorOpen] = useState(false)
   const [noteText, setNoteText] = useState('')
 
@@ -57,12 +65,12 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
 
   if (!open || !link) return null
 
+  const hasReminder = link.reminderInterval > 0 && link.nextReminderAt > 0
+
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(link.url)
-      toast.success(t.actions.copied)
-      onClose()
-    } catch {}
+    await navigator.clipboard.writeText(link.url)
+    toast.success(t.actions.copied)
+    onClose()
   }
 
   const handleSaveNote = () => {
@@ -75,32 +83,65 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
     <>
       <div className="bottom-sheet-backdrop" onClick={onClose}>
         <div
-          className="bottom-sheet-content max-w-md mx-auto p-0 pb-6"
+          className="bottom-sheet-content max-w-md mx-auto p-4 space-y-3 text-start"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-base-300" />
+          <div className="mx-auto -mt-1 h-1 w-10 rounded-full bg-base-300" />
 
-          <div className="px-5 pt-3 pb-3 border-b border-base-200 text-start space-y-1">
-            <p className="text-xs font-bold text-[#8C8885] dark:text-[#9E9792] truncate">
-              {link.domain} • {formatInterval(link.reminderInterval)}
-            </p>
-            <h3 className="text-base font-bold text-base-content line-clamp-2 mt-0.5">
-              {link.title || link.url}
-            </h3>
-
-            {link.notes && (
-              <div className="p-2.5 rounded-xl bg-base-200/50 border border-base-300/40 text-xs text-base-content font-medium flex items-start gap-1.5 mt-1">
-                <FileText className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                <span className="break-words">{link.notes}</span>
+          <div className="flex items-center gap-3 px-2 pt-1 pb-2 border-b border-base-200">
+            <div className="flex h-7 w-7 items-center justify-center shrink-0">
+              {link.faviconUrl ? (
+                <img
+                  src={link.faviconUrl}
+                  alt=""
+                  className="h-5 w-5 object-contain rounded-md"
+                  onError={(e) => {
+                    ;(e.target as HTMLElement).style.display = 'none'
+                  }}
+                />
+              ) : (
+                <span className="text-xs font-bold text-base-content/60">
+                  {link.domain.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-base-content truncate">
+                {link.title || link.domain}
+              </p>
+              <div className="flex items-center gap-2 text-[11px] text-base-content/50">
+                <span>{link.domain}</span>
+                <span>•</span>
+                <span>{formatInterval(link.reminderInterval)}</span>
+                {hasReminder && !link.isPaused && !link.isDone && (
+                  <>
+                    <span>•</span>
+                    <span className="text-primary font-medium">
+                      {formatNextReminder(link.nextReminderAt)}
+                    </span>
+                  </>
+                )}
+                {typeof link.openCount === 'number' && link.openCount > 0 && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-0.5 text-base-content/70 font-semibold">
+                      <Eye className="h-3 w-3" />
+                      <span>{formatNumber(link.openCount)}</span>
+                    </span>
+                  </>
+                )}
               </div>
-            )}
-
-            <p className="text-xs text-primary font-bold pt-0.5">
-              {link.isPaused ? t.inbox.pausedSection : formatNextReminder(link.nextReminderAt)}
-            </p>
+            </div>
           </div>
 
-          <div className="px-2 pt-2 space-y-0.5 select-none">
+          {link.notes && (
+            <div className="mx-2 p-2.5 rounded-xl bg-base-200/50 border border-base-300/40 text-xs text-base-content/80">
+              <p className="font-semibold text-[11px] text-base-content/50 mb-0.5">{t.actions.note}:</p>
+              <p className="whitespace-pre-wrap">{link.notes}</p>
+            </div>
+          )}
+
+          <div className="space-y-0.5">
             <button
               type="button"
               onClick={() => {
@@ -133,46 +174,80 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
               <span className="flex-1">{t.actions.changeReminder}</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setSnoozePickerOpen(true)}
-              className="w-full flex items-center gap-3.5 px-4 h-12 rounded-2xl text-start text-sm font-semibold text-base-content active:bg-base-200/60 transition-colors"
-            >
-              <Clock className="h-5 w-5 text-base-content/70 shrink-0" />
-              <span className="flex-1">{t.actions.snooze}</span>
-            </button>
+            {hasReminder && (
+              <button
+                type="button"
+                onClick={() => setSnoozePickerOpen(true)}
+                className="w-full flex items-center gap-3.5 px-4 h-12 rounded-2xl text-start text-sm font-semibold text-base-content active:bg-base-200/60 transition-colors"
+              >
+                <Clock className="h-5 w-5 text-base-content/70 shrink-0" />
+                <span className="flex-1">{t.actions.snooze}</span>
+              </button>
+            )}
 
             <button
               type="button"
               onClick={() => {
                 onClose()
-                onTogglePause(link)
+                if (onToggleSecret) onToggleSecret(link)
               }}
               className="w-full flex items-center gap-3.5 px-4 h-12 rounded-2xl text-start text-sm font-semibold text-base-content active:bg-base-200/60 transition-colors"
             >
-              {link.isPaused ? (
-                <Play className="h-5 w-5 text-primary shrink-0" />
-              ) : (
-                <Pause className="h-5 w-5 text-warning shrink-0" />
-              )}
+              <Lock className="h-5 w-5 text-base-content/70 shrink-0" />
               <span className="flex-1">
-                {link.isPaused ? t.actions.resume : t.actions.pause}
+                {link.isSecret ? t.actions.moveToQueue : t.actions.moveToSecret}
               </span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                onClose()
-                onMarkDone(link)
-              }}
-              className="w-full flex items-center gap-3.5 px-4 h-12 rounded-2xl text-start text-sm font-semibold text-base-content active:bg-base-200/60 transition-colors"
-            >
-              <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
-              <span className="flex-1 font-bold text-success">
-                {t.actions.done}
-              </span>
-            </button>
+            {hasReminder && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  onTogglePause(link)
+                }}
+                className="w-full flex items-center gap-3.5 px-4 h-12 rounded-2xl text-start text-sm font-semibold text-base-content active:bg-base-200/60 transition-colors"
+              >
+                {link.isPaused ? (
+                  <Play className="h-5 w-5 text-primary shrink-0" />
+                ) : (
+                  <Pause className="h-5 w-5 text-warning shrink-0" />
+                )}
+                <span className="flex-1">
+                  {link.isPaused ? t.actions.resume : t.actions.pause}
+                </span>
+              </button>
+            )}
+
+            {link.isDone ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  if (onRestore) onRestore(link)
+                }}
+                className="w-full flex items-center gap-3.5 px-4 h-12 rounded-2xl text-start text-sm font-semibold text-primary active:bg-primary/10 transition-colors"
+              >
+                <RotateCcw className="h-5 w-5 text-primary shrink-0" />
+                <span className="flex-1 font-bold text-primary">
+                  {t.actions.restore}
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  onMarkDone(link)
+                }}
+                className="w-full flex items-center gap-3.5 px-4 h-12 rounded-2xl text-start text-sm font-semibold text-base-content active:bg-base-200/60 transition-colors"
+              >
+                <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
+                <span className="flex-1 font-bold text-success">
+                  {t.actions.done}
+                </span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -224,7 +299,7 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
               onChange={(e) => setNoteText(e.target.value)}
               placeholder={t.add.notePlaceholder}
               rows={3}
-              className="textarea textarea-bordered w-full rounded-xl bg-base-200 text-sm font-medium border-base-300/80 resize-none"
+              className="textarea textarea-bordered w-full rounded-xl bg-base-200 text-xs font-medium"
               autoFocus
             />
             <div className="flex items-center gap-2 pt-1">
@@ -240,41 +315,8 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
                 onClick={handleSaveNote}
                 className="btn btn-primary flex-1 font-bold text-white"
               >
-                {t.add.apply}
+                {t.actions.saveNote}
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {snoozePickerOpen && (
-        <div className="bottom-sheet-backdrop z-60" onClick={() => setSnoozePickerOpen(false)}>
-          <div
-            className="bottom-sheet-content max-w-sm mx-auto p-4 space-y-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-base font-bold text-base-content pb-1 text-start">
-              {t.actions.snooze}
-            </h3>
-            <div className="space-y-1">
-              {[
-                { label: t.actions.snooze1h, minutes: 60 },
-                { label: t.actions.snooze3h, minutes: 180 },
-                { label: t.actions.snoozeTomorrow, minutes: 1440 },
-              ].map((option) => (
-                <button
-                  key={option.minutes}
-                  type="button"
-                  onClick={() => {
-                    setSnoozePickerOpen(false)
-                    onClose()
-                    onSnooze(link, option.minutes)
-                  }}
-                  className="w-full flex items-center h-12 px-4 rounded-xl text-sm font-semibold text-base-content active:bg-base-200"
-                >
-                  {option.label}
-                </button>
-              ))}
             </div>
           </div>
         </div>
@@ -285,12 +327,47 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
           open={changeReminderOpen}
           currentMinutes={link.reminderInterval}
           onClose={() => setChangeReminderOpen(false)}
-          onApply={(newMinutes) => {
+          onApply={(minutes: number) => {
+            onChangeReminder(link, minutes)
             setChangeReminderOpen(false)
             onClose()
-            onChangeReminder(link, newMinutes)
           }}
         />
+      )}
+
+      {snoozePickerOpen && (
+        <div className="bottom-sheet-backdrop z-60" onClick={() => setSnoozePickerOpen(false)}>
+          <div
+            className="bottom-sheet-content max-w-sm mx-auto p-5 space-y-3 text-start"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto -mt-2 h-1 w-10 rounded-full bg-base-300" />
+            <h3 className="text-base font-bold text-base-content">
+              {t.actions.snooze}
+            </h3>
+            <div className="space-y-1.5 pt-1">
+              {[
+                { minutes: 60, label: t.actions.snooze1h },
+                { minutes: 180, label: t.actions.snooze3h },
+                { minutes: 1440, label: t.actions.snoozeTomorrow },
+              ].map((item) => (
+                <button
+                  key={item.minutes}
+                  type="button"
+                  onClick={() => {
+                    onSnooze(link, item.minutes)
+                    setSnoozePickerOpen(false)
+                    onClose()
+                  }}
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-base-200/70 hover:bg-base-200 font-semibold text-xs text-base-content"
+                >
+                  <span>{item.label}</span>
+                  <Clock className="h-4 w-4 text-base-content/50" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {confirmDeleteOpen && (
@@ -300,10 +377,10 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-base font-bold text-error">
-              {t.settings.clearDataConfirmTitle}
+              {t.actions.delete}
             </h3>
-            <p className="text-xs text-base-content/75">
-              {t.settings.clearDataConfirmDesc}
+            <p className="text-xs text-base-content/75 truncate">
+              {link.title || link.url}
             </p>
             <div className="flex items-center gap-2 pt-2">
               <button
@@ -316,9 +393,9 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
               <button
                 type="button"
                 onClick={() => {
+                  onDelete(link.id)
                   setConfirmDeleteOpen(false)
                   onClose()
-                  onDelete(link.id)
                 }}
                 className="btn btn-error flex-1 font-bold"
               >

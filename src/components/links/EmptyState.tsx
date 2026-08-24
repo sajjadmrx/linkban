@@ -4,9 +4,10 @@ import { useI18n } from '@/lib/i18n'
 
 interface EmptyStateProps {
   onAddClick: () => void
+  isVault?: boolean
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ onAddClick }) => {
+export const EmptyState: React.FC<EmptyStateProps> = ({ onAddClick, isVault }) => {
   const { t } = useI18n()
 
   return (
@@ -14,17 +15,17 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onAddClick }) => {
       <div className="relative">
         <img
           src="/mascot.jpg"
-          alt="Revisit Mascot"
+          alt="Yadban Mascot"
           className="h-28 w-28 object-contain rounded-3xl shadow-sm"
         />
       </div>
 
       <div className="space-y-1">
         <p className="text-sm font-bold text-base-content">
-          {t.inbox.nothingWaiting}
+          {isVault ? t.secret.title : t.inbox.nothingWaiting}
         </p>
         <p className="text-xs text-[#8C8885] dark:text-[#9E9792] max-w-xs leading-relaxed">
-          {t.inbox.emptyHint}
+          {isVault ? t.secret.emptySecret : t.inbox.emptyHint}
         </p>
       </div>
 

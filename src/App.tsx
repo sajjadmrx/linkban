@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Header } from '@/components/layout/Header'
 import { LinkList } from '@/components/links/LinkList'
+import { HistoryView } from '@/components/history/HistoryView'
+import { StatsView } from '@/components/stats/StatsView'
 import { AddLinkSheet } from '@/components/links/AddLinkSheet'
 import { LinkActionsSheet } from '@/components/links/LinkActionsSheet'
 import { SettingsSheet } from '@/components/settings/SettingsSheet'
+import { SecretAuthModal } from '@/components/secret/SecretAuthModal'
 import { I18nProvider, useI18n } from '@/lib/i18n'
 import { storageService, defaultSettings } from '@/lib/storage'
 import {
@@ -11,9 +14,9 @@ import {
   computeNextReminderTime,
   generateNotificationId,
 } from '@/lib/notifications'
-import { widgetService } from '@/lib/widget'
+import { shareService } from '@/lib/widget'
 import { triggerHaptic } from '@/lib/haptics'
-import type { SavedLink, AppSettings, Language } from '@/types/link'
+import type { SavedLink, AppSettings, Language, AppTab } from '@/types/link'
 import { App as CapApp } from '@capacitor/app'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { Toaster, toast } from 'sonner'
@@ -25,11 +28,18 @@ const MainApp: React.FC = () => {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings)
   const [loading, setLoading] = useState(true)
 
+  const [currentTab, setCurrentTab] = useState<AppTab>('queue')
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [sharedUrl, setSharedUrl] = useState<string>('')
   const [settingsSheetOpen, setSettingsSheetOpen] = useState(false)
   const [selectedLink, setSelectedLink] = useState<SavedLink | null>(null)
   const [actionsSheetOpen, setActionsSheetOpen] = useState(false)
+
+  const [isVaultUnlocked, setIsVaultUnlocked] = useState(false)
+  const [isVaultViewActive, setIsVaultViewActive] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+
+  const lastBackPressRef = useRef<number>(0)
 
   const applyTheme = useCallback((theme: AppSettings['theme']) => {
     const root = document.documentElement
@@ -48,9 +58,8 @@ const MainApp: React.FC = () => {
     } catch {}
   }, [])
 
-  const syncStateAndNative = useCallback(async (updatedLinks: SavedLink[], currentSettings: AppSettings) => {
+  const syncState = useCallback(async (updatedLinks: SavedLink[]) => {
     setLinks(updatedLinks)
-    await widgetService.syncWidgetData(updatedLinks)
   }, [])
 
   const handleSnooze = useCallback(async (linkOrId: SavedLink | string, minutes: number) => {
@@ -68,20 +77,20 @@ const MainApp: React.FC = () => {
     }
 
     const updatedList = await storageService.updateLink(updatedLink)
-    if (settings.notificationsEnabled) {
+    if (settings.notificationsEnabled && nextReminder > 0) {
       await notificationService.scheduleReminder(updatedLink, nextReminder)
     }
 
-    await syncStateAndNative(updatedList, settings)
+    await syncState(updatedList)
     await triggerHaptic(settings.hapticsEnabled)
 
     const label = minutes >= 1440 ? '1d' : minutes >= 60 ? `${Math.round(minutes / 60)}h` : `${minutes}m`
     toast.success(t.toasts.snoozed.replace('{time}', label))
-  }, [settings, syncStateAndNative, t])
+  }, [settings, syncState, t])
 
   const checkForSharedLink = useCallback(async () => {
     try {
-      const incomingUrl = await widgetService.getSharedLink()
+      const incomingUrl = await shareService.getSharedLink()
       if (incomingUrl) {
         setSharedUrl(incomingUrl)
         setAddSheetOpen(true)
@@ -107,7 +116,6 @@ const MainApp: React.FC = () => {
           handleSnooze(linkId, minutes)
         })
 
-        await widgetService.syncWidgetData(savedLinks)
         await checkForSharedLink()
       } finally {
         setLoading(false)
@@ -118,9 +126,14 @@ const MainApp: React.FC = () => {
   }, [applyTheme, checkForSharedLink, handleSnooze, setLanguage])
 
   useEffect(() => {
-    const stateChangeListener = CapApp.addListener('appStateChange', (state) => {
+    const stateChangeListener = CapApp.addListener('appStateChange', async (state) => {
       if (state.isActive) {
+        const freshLinks = await storageService.getLinks()
+        setLinks(freshLinks)
         checkForSharedLink()
+      } else {
+        setIsVaultUnlocked(false)
+        setIsVaultViewActive(false)
       }
     })
 
@@ -135,15 +148,27 @@ const MainApp: React.FC = () => {
     })
 
     const backButtonListener = CapApp.addListener('backButton', () => {
-      if (settingsSheetOpen) {
+      if (authModalOpen) {
+        setAuthModalOpen(false)
+      } else if (settingsSheetOpen) {
         setSettingsSheetOpen(false)
       } else if (addSheetOpen) {
         setAddSheetOpen(false)
         setSharedUrl('')
       } else if (actionsSheetOpen) {
         setActionsSheetOpen(false)
+      } else if (isVaultViewActive) {
+        setIsVaultViewActive(false)
+      } else if (currentTab !== 'queue') {
+        setCurrentTab('queue')
       } else {
-        CapApp.exitApp()
+        const now = Date.now()
+        if (now - lastBackPressRef.current < 2000) {
+          CapApp.exitApp()
+        } else {
+          lastBackPressRef.current = now
+          toast(t.app.exitPrompt, { duration: 2000 })
+        }
       }
     })
 
@@ -152,7 +177,7 @@ const MainApp: React.FC = () => {
       urlOpenListener.then((h) => h.remove())
       backButtonListener.then((h) => h.remove())
     }
-  }, [checkForSharedLink, settingsSheetOpen, addSheetOpen, actionsSheetOpen])
+  }, [checkForSharedLink, authModalOpen, settingsSheetOpen, addSheetOpen, actionsSheetOpen, isVaultViewActive, currentTab, t])
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -172,14 +197,22 @@ const MainApp: React.FC = () => {
     faviconUrl: string
     reminderInterval: number
     notes?: string
+    isSecret?: boolean
   }) => {
-    const hasPermission = await notificationService.checkPermissions()
-    if (!hasPermission && settings.notificationsEnabled) {
-      await notificationService.requestPermissions()
+    const hasReminder = linkData.reminderInterval > 0
+
+    if (hasReminder) {
+      const hasPermission = await notificationService.checkPermissions()
+      if (!hasPermission && settings.notificationsEnabled) {
+        await notificationService.requestPermissions()
+      }
     }
 
     const now = Date.now()
-    const nextReminder = computeNextReminderTime(linkData.reminderInterval, now, settings)
+    const nextReminder = hasReminder
+      ? computeNextReminderTime(linkData.reminderInterval, now, settings)
+      : 0
+
     const newLink: SavedLink = {
       id: crypto.randomUUID ? crypto.randomUUID() : `link_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       url: linkData.url,
@@ -193,21 +226,27 @@ const MainApp: React.FC = () => {
       isDone: false,
       notificationId: generateNotificationId(),
       notes: linkData.notes,
+      isSecret: linkData.isSecret,
+      openCount: 0,
     }
 
     const updated = await storageService.addLink(newLink)
-    if (settings.notificationsEnabled) {
+    if (hasReminder && settings.notificationsEnabled && nextReminder > 0) {
       await notificationService.scheduleReminder(newLink, nextReminder)
     }
 
-    await syncStateAndNative(updated, settings)
+    await syncState(updated)
     await triggerHaptic(settings.hapticsEnabled)
     toast.success(t.toasts.linkSaved)
     setSharedUrl('')
   }
 
   const handleChangeReminder = async (link: SavedLink, newInterval: number) => {
-    const nextReminder = computeNextReminderTime(newInterval, Date.now(), settings)
+    const hasReminder = newInterval > 0
+    const nextReminder = hasReminder
+      ? computeNextReminderTime(newInterval, Date.now(), settings)
+      : 0
+
     const updatedLink: SavedLink = {
       ...link,
       reminderInterval: newInterval,
@@ -216,11 +255,13 @@ const MainApp: React.FC = () => {
     }
     const updated = await storageService.updateLink(updatedLink)
 
-    if (settings.notificationsEnabled) {
+    if (hasReminder && settings.notificationsEnabled && nextReminder > 0) {
       await notificationService.scheduleReminder(updatedLink, nextReminder)
+    } else {
+      await notificationService.cancelReminder(link.notificationId)
     }
 
-    await syncStateAndNative(updated, settings)
+    await syncState(updated)
     await triggerHaptic(settings.hapticsEnabled)
     toast.success(t.toasts.linkUpdated)
     if (selectedLink?.id === link.id) {
@@ -234,11 +275,28 @@ const MainApp: React.FC = () => {
       notes: note || undefined,
     }
     const updated = await storageService.updateLink(updatedLink)
-    await syncStateAndNative(updated, settings)
+    await syncState(updated)
     await triggerHaptic(settings.hapticsEnabled)
     if (selectedLink?.id === link.id) {
       setSelectedLink(updatedLink)
     }
+  }
+
+  const handleToggleSecret = async (link: SavedLink) => {
+    const isNowSecret = !link.isSecret
+    const updatedLink: SavedLink = {
+      ...link,
+      isSecret: isNowSecret,
+    }
+    const updated = await storageService.updateLink(updatedLink)
+    await syncState(updated)
+    await triggerHaptic(settings.hapticsEnabled)
+
+    if (selectedLink?.id === link.id) {
+      setSelectedLink(updatedLink)
+    }
+
+    toast.success(isNowSecret ? t.actions.moveToSecret : t.actions.moveToQueue)
   }
 
   const handleTogglePause = async (link: SavedLink) => {
@@ -258,13 +316,13 @@ const MainApp: React.FC = () => {
       await notificationService.cancelReminder(link.notificationId)
       toast.success(t.toasts.linkPaused)
     } else {
-      if (settings.notificationsEnabled) {
+      if (settings.notificationsEnabled && nextReminder > 0) {
         await notificationService.scheduleReminder(updatedLink, nextReminder)
       }
       toast.success(t.toasts.linkResumed)
     }
 
-    await syncStateAndNative(updated, settings)
+    await syncState(updated)
     await triggerHaptic(settings.hapticsEnabled)
     if (selectedLink?.id === link.id) {
       setSelectedLink(updatedLink)
@@ -280,7 +338,7 @@ const MainApp: React.FC = () => {
 
     await notificationService.cancelReminder(link.notificationId)
     const updated = await storageService.updateLink(updatedLink)
-    await syncStateAndNative(updated, settings)
+    await syncState(updated)
     await triggerHaptic(settings.hapticsEnabled)
 
     confetti({
@@ -299,16 +357,40 @@ const MainApp: React.FC = () => {
             ...link,
             isDone: false,
             doneAt: undefined,
-            nextReminderAt: computeNextReminderTime(link.reminderInterval, Date.now(), settings),
+            nextReminderAt: link.reminderInterval > 0
+              ? computeNextReminderTime(link.reminderInterval, Date.now(), settings)
+              : 0,
           }
           const restoredList = await storageService.updateLink(restored)
-          if (settings.notificationsEnabled && !restored.isPaused) {
+          if (settings.notificationsEnabled && !restored.isPaused && restored.nextReminderAt > 0) {
             await notificationService.scheduleReminder(restored, restored.nextReminderAt)
           }
-          await syncStateAndNative(restoredList, settings)
+          await syncState(restoredList)
         },
       },
     })
+  }
+
+  const handleRestoreLink = async (link: SavedLink) => {
+    const nextReminder = link.reminderInterval > 0
+      ? computeNextReminderTime(link.reminderInterval, Date.now(), settings)
+      : 0
+
+    const restored: SavedLink = {
+      ...link,
+      isDone: false,
+      doneAt: undefined,
+      nextReminderAt: nextReminder,
+    }
+
+    const updated = await storageService.updateLink(restored)
+    if (settings.notificationsEnabled && !restored.isPaused && nextReminder > 0) {
+      await notificationService.scheduleReminder(restored, nextReminder)
+    }
+
+    await syncState(updated)
+    await triggerHaptic(settings.hapticsEnabled)
+    toast.success(t.toasts.linkRestored)
   }
 
   const handleDeleteLink = async (linkOrId: SavedLink | string) => {
@@ -319,13 +401,33 @@ const MainApp: React.FC = () => {
     }
 
     const updated = await storageService.deleteLink(linkId)
-    await syncStateAndNative(updated, settings)
+    await syncState(updated)
     await triggerHaptic(settings.hapticsEnabled)
     toast.success(t.toasts.linkDeleted)
   }
 
+  const handleClearHistory = async () => {
+    const completedIds = links.filter((l) => l.isDone).map((l) => l.id)
+    for (const id of completedIds) {
+      await storageService.deleteLink(id)
+    }
+    const fresh = await storageService.getLinks()
+    await syncState(fresh)
+    await triggerHaptic(settings.hapticsEnabled)
+    toast.success(t.toasts.historyCleared)
+  }
+
   const handleTapLink = async (link: SavedLink) => {
     await triggerHaptic(settings.hapticsEnabled)
+
+    const updatedLink: SavedLink = {
+      ...link,
+      openCount: (link.openCount || 0) + 1,
+      lastOpenedAt: Date.now(),
+    }
+    const updated = await storageService.updateLink(updatedLink)
+    await syncState(updated)
+
     await notificationService.openLinkInBrowser(link.url)
   }
 
@@ -350,6 +452,15 @@ const MainApp: React.FC = () => {
     } catch {}
   }
 
+  const handleToggleVault = () => {
+    triggerHaptic(settings.hapticsEnabled)
+    if (!isVaultUnlocked) {
+      setAuthModalOpen(true)
+    } else {
+      setIsVaultViewActive((prev) => !prev)
+    }
+  }
+
   const handleUpdateSettings = async (newSettings: AppSettings) => {
     const saved = await storageService.saveSettings(newSettings)
     setSettings(saved)
@@ -361,7 +472,7 @@ const MainApp: React.FC = () => {
       }
     } else {
       for (const link of links) {
-        if (!link.isPaused && !link.isDone) {
+        if (!link.isPaused && !link.isDone && link.nextReminderAt > 0) {
           await notificationService.scheduleReminder(link, link.nextReminderAt)
         }
       }
@@ -388,7 +499,7 @@ const MainApp: React.FC = () => {
     setSettings(importedSettings)
     setLanguage(importedSettings.language)
     applyTheme(importedSettings.theme)
-    await syncStateAndNative(importedLinks, importedSettings)
+    await syncState(importedLinks)
   }
 
   const handleClearAllData = async () => {
@@ -397,10 +508,18 @@ const MainApp: React.FC = () => {
     }
     await storageService.clearAll()
     setLinks([])
-    await widgetService.syncWidgetData([])
   }
 
-  const activeLinksCount = links.filter((l) => !l.isDone && !l.isPaused).length
+  const displayedLinks = useMemo(() => {
+    if (isVaultViewActive) {
+      return links.filter((l) => !!l.isSecret)
+    }
+    return links.filter((l) => !l.isSecret)
+  }, [links, isVaultViewActive])
+
+  const activeLinksCount = useMemo(() => {
+    return displayedLinks.filter((l) => !l.isDone && !l.isPaused).length
+  }, [displayedLinks])
 
   if (loading) {
     return (
@@ -414,19 +533,52 @@ const MainApp: React.FC = () => {
     <div className="min-h-screen bg-base-100 text-base-content antialiased flex flex-col">
       <Header
         activeCount={activeLinksCount}
+        currentTab={currentTab}
+        onSelectTab={setCurrentTab}
+        isVaultUnlocked={isVaultUnlocked}
+        isVaultViewActive={isVaultViewActive}
+        onToggleVault={handleToggleVault}
+        onBackFromVault={() => setIsVaultViewActive(false)}
         onOpenSettings={() => setSettingsSheetOpen(true)}
       />
 
       <main className="flex-1">
-        <LinkList
-          links={links}
-          onTapLink={handleTapLink}
-          onOpenActions={handleOpenActions}
-          onAddClick={() => {
-            setSharedUrl('')
-            setAddSheetOpen(true)
-          }}
-        />
+        {isVaultViewActive ? (
+          <LinkList
+            links={displayedLinks}
+            onTapLink={handleTapLink}
+            onOpenActions={handleOpenActions}
+            onAddClick={() => {
+              setSharedUrl('')
+              setAddSheetOpen(true)
+            }}
+            isVault={true}
+          />
+        ) : currentTab === 'queue' ? (
+          <LinkList
+            links={displayedLinks}
+            onTapLink={handleTapLink}
+            onOpenActions={handleOpenActions}
+            onAddClick={() => {
+              setSharedUrl('')
+              setAddSheetOpen(true)
+            }}
+            isVault={false}
+          />
+        ) : currentTab === 'history' ? (
+          <HistoryView
+            links={displayedLinks}
+            onTapLink={handleTapLink}
+            onRestoreLink={handleRestoreLink}
+            onDeleteLink={handleDeleteLink}
+            onClearHistory={handleClearHistory}
+          />
+        ) : (
+          <StatsView
+            links={displayedLinks}
+            onTapLink={handleTapLink}
+          />
+        )}
       </main>
 
       <AddLinkSheet
@@ -455,9 +607,11 @@ const MainApp: React.FC = () => {
         onUpdateNote={handleUpdateNote}
         onTogglePause={handleTogglePause}
         onMarkDone={handleMarkDone}
+        onRestore={handleRestoreLink}
         onSnooze={handleSnooze}
         onShare={handleShareLink}
         onDelete={handleDeleteLink}
+        onToggleSecret={handleToggleSecret}
       />
 
       <SettingsSheet
@@ -468,6 +622,17 @@ const MainApp: React.FC = () => {
         onExportData={handleExportData}
         onImportData={handleImportData}
         onClearAllData={handleClearAllData}
+      />
+
+      <SecretAuthModal
+        open={authModalOpen}
+        mode="unlock"
+        settings={settings}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthenticated={() => {
+          setIsVaultUnlocked(true)
+          setIsVaultViewActive(true)
+        }}
       />
 
       <Toaster

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { MoreVertical, Pause, Clock, FileText } from 'lucide-react'
+import { MoreVertical, Pause, Clock, FileText, Lock, Bookmark, Eye } from 'lucide-react'
 import { useI18n } from '@/lib/i18n'
 import type { SavedLink } from '@/types/link'
 
@@ -14,11 +14,12 @@ export const LinkItem: React.FC<LinkItemProps> = ({
   onTap,
   onOpenActions,
 }) => {
-  const { t, formatNextReminder } = useI18n()
+  const { t, formatNumber, formatNextReminder } = useI18n()
   const [imgError, setImgError] = useState(false)
   const timerRef = useRef<number | null>(null)
 
-  const isDue = !link.isPaused && !link.isDone && link.nextReminderAt <= Date.now()
+  const hasReminder = link.reminderInterval > 0 && link.nextReminderAt > 0
+  const isDue = hasReminder && !link.isPaused && !link.isDone && link.nextReminderAt <= Date.now()
   const initial = (link.domain.charAt(0) || 'L').toUpperCase()
 
   const handleTouchStart = () => {
@@ -81,11 +82,21 @@ export const LinkItem: React.FC<LinkItemProps> = ({
         )}
 
         <div className="flex items-center gap-1.5 text-xs mt-1 truncate">
+          {link.isSecret && (
+            <span className="flex items-center text-primary font-bold text-[10px] bg-primary/10 px-1.5 py-0.5 rounded-md gap-0.5">
+              <Lock className="h-2.5 w-2.5" />
+            </span>
+          )}
           <span className="font-medium text-[#8C8885] dark:text-[#9E9792] truncate max-w-[140px]">
             {link.domain}
           </span>
           <span className="text-base-content/20">•</span>
-          {link.isPaused ? (
+          {!hasReminder ? (
+            <span className="flex items-center text-[#8C8885] dark:text-[#9E9792] font-medium">
+              <Bookmark className="h-3 w-3 me-1 text-primary/70" />
+              {t.intervals.full_none}
+            </span>
+          ) : link.isPaused ? (
             <span className="flex items-center text-warning font-medium">
               <Pause className="h-3 w-3 me-1" />
               {t.inbox.pausedSection}
@@ -99,6 +110,16 @@ export const LinkItem: React.FC<LinkItemProps> = ({
               <Clock className="h-3 w-3 me-1" />
               {formatNextReminder(link.nextReminderAt)}
             </span>
+          )}
+
+          {typeof link.openCount === 'number' && link.openCount > 0 && (
+            <>
+              <span className="text-base-content/20">•</span>
+              <span className="flex items-center text-[11px] text-base-content/60 font-semibold gap-0.5">
+                <Eye className="h-3 w-3 text-base-content/40" />
+                <span>{formatNumber(link.openCount)}</span>
+              </span>
+            </>
           )}
         </div>
       </div>

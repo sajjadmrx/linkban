@@ -10,6 +10,7 @@ interface LinkListProps {
   onTapLink: (link: SavedLink) => void
   onOpenActions: (link: SavedLink) => void
   onAddClick: () => void
+  isVault?: boolean
 }
 
 export const LinkList: React.FC<LinkListProps> = ({
@@ -17,6 +18,7 @@ export const LinkList: React.FC<LinkListProps> = ({
   onTapLink,
   onOpenActions,
   onAddClick,
+  isVault,
 }) => {
   const { t } = useI18n()
 
@@ -32,9 +34,13 @@ export const LinkList: React.FC<LinkListProps> = ({
     const soonList: SavedLink[] = []
     const laterList: SavedLink[] = []
     const pausedList: SavedLink[] = []
+    const savedOnlyList: SavedLink[] = []
 
     for (const item of activeLinks) {
-      if (item.isPaused) {
+      const hasReminder = item.reminderInterval > 0 && item.nextReminderAt > 0
+      if (!hasReminder) {
+        savedOnlyList.push(item)
+      } else if (item.isPaused) {
         pausedList.push(item)
       } else if (item.nextReminderAt <= now) {
         dueList.push(item)
@@ -46,11 +52,13 @@ export const LinkList: React.FC<LinkListProps> = ({
     }
 
     const sortFn = (a: SavedLink, b: SavedLink) => a.nextReminderAt - b.nextReminderAt
+    const createdSortFn = (a: SavedLink, b: SavedLink) => b.createdAt - a.createdAt
 
     dueList.sort(sortFn)
     soonList.sort(sortFn)
     laterList.sort(sortFn)
     pausedList.sort(sortFn)
+    savedOnlyList.sort(createdSortFn)
 
     const result = []
     if (dueList.length > 0) {
@@ -65,6 +73,9 @@ export const LinkList: React.FC<LinkListProps> = ({
     if (pausedList.length > 0) {
       result.push({ title: t.inbox.pausedSection, items: pausedList, isDue: false })
     }
+    if (savedOnlyList.length > 0) {
+      result.push({ title: t.inbox.savedOnlySection, items: savedOnlyList, isDue: false })
+    }
 
     return result
   }, [activeLinks, t])
@@ -72,7 +83,7 @@ export const LinkList: React.FC<LinkListProps> = ({
   if (activeLinks.length === 0) {
     return (
       <div className="flex-1 flex flex-col">
-        <EmptyState onAddClick={onAddClick} />
+        <EmptyState onAddClick={onAddClick} isVault={isVault} />
       </div>
     )
   }

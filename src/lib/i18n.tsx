@@ -56,6 +56,7 @@ export const I18nProvider: React.FC<{
   }
 
   const formatInterval = (minutes: number): string => {
+    if (minutes <= 0) return t.intervals.full_none
     if (minutes === 30) return t.intervals.full_m30
     if (minutes === 60) return t.intervals.full_h1
     if (minutes === 120) return t.intervals.full_h2

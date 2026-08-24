@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Plus, Clipboard, AlertCircle, Sparkles, ExternalLink, FileText, X } from 'lucide-react'
+import { Plus, Clipboard, AlertCircle, Sparkles, ExternalLink, FileText, X, Lock } from 'lucide-react'
 import { ReminderPicker } from './ReminderPicker'
 import { useI18n } from '@/lib/i18n'
 import { isValidUrl, extractMetadata, normalizeUrl, extractDomain } from '@/lib/metadata'
@@ -16,6 +16,7 @@ interface AddLinkSheetProps {
     faviconUrl: string
     reminderInterval: number
     notes?: string
+    isSecret?: boolean
   }) => Promise<void>
   existingLinks: SavedLink[]
   defaultInterval: number
@@ -36,6 +37,7 @@ export const AddLinkSheet: React.FC<AddLinkSheetProps> = ({
   const [urlInput, setUrlInput] = useState('')
   const [notesInput, setNotesInput] = useState('')
   const [showNotes, setShowNotes] = useState(false)
+  const [isSecret, setIsSecret] = useState(false)
   const [interval, setInterval] = useState(defaultInterval)
   const [detectedTitle, setDetectedTitle] = useState('')
   const [detectedDomain, setDetectedDomain] = useState('')
@@ -54,6 +56,7 @@ export const AddLinkSheet: React.FC<AddLinkSheetProps> = ({
       setErrorMessage('')
       setNotesInput('')
       setShowNotes(false)
+      setIsSecret(false)
       const startUrl = initialUrl || ''
       setUrlInput(startUrl)
 
@@ -144,6 +147,7 @@ export const AddLinkSheet: React.FC<AddLinkSheetProps> = ({
         faviconUrl: favicon,
         reminderInterval: interval,
         notes: notesInput.trim() || undefined,
+        isSecret,
       })
       onClose()
     } finally {
@@ -263,7 +267,33 @@ export const AddLinkSheet: React.FC<AddLinkSheetProps> = ({
             </div>
           )}
 
-          {showNotes ? (
+          <div className="flex items-center gap-2">
+            {!showNotes ? (
+              <button
+                type="button"
+                onClick={() => setShowNotes(true)}
+                className="btn btn-ghost btn-xs text-xs text-base-content/60 font-semibold gap-1 px-2 h-7"
+              >
+                <FileText className="h-3.5 w-3.5" />
+                <span>+ {t.add.note}</span>
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => setIsSecret(!isSecret)}
+              className={`btn btn-xs h-7 px-2.5 rounded-lg text-xs font-semibold gap-1 transition-all ${
+                isSecret
+                  ? 'btn-primary text-white shadow-sm'
+                  : 'btn-ghost text-base-content/60'
+              }`}
+            >
+              <Lock className="h-3.5 w-3.5" />
+              <span>{t.add.markSecret}</span>
+            </button>
+          </div>
+
+          {showNotes && (
             <div className="space-y-1 text-start">
               <input
                 type="text"
@@ -273,17 +303,6 @@ export const AddLinkSheet: React.FC<AddLinkSheetProps> = ({
                 className="input input-bordered input-sm w-full h-10 text-xs rounded-xl bg-base-200 border-base-300/80"
                 autoFocus
               />
-            </div>
-          ) : (
-            <div className="flex justify-start">
-              <button
-                type="button"
-                onClick={() => setShowNotes(true)}
-                className="btn btn-ghost btn-xs text-xs text-base-content/60 font-semibold gap-1 px-1 h-7"
-              >
-                <FileText className="h-3.5 w-3.5" />
-                <span>+ {t.add.note}</span>
-              </button>
             </div>
           )}
 

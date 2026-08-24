@@ -9,12 +9,12 @@ interface ReminderPickerProps {
 }
 
 const PRESETS = [
+  { minutes: 0, labelKey: 'none' as const },
   { minutes: 30, labelKey: 'm30' as const },
   { minutes: 60, labelKey: 'h1' as const },
   { minutes: 120, labelKey: 'h2' as const },
   { minutes: 180, labelKey: 'h3' as const },
   { minutes: 360, labelKey: 'h6' as const },
-  { minutes: 720, labelKey: 'h12' as const },
   { minutes: 1440, labelKey: 'd1' as const },
 ]
 
