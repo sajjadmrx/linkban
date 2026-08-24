@@ -1,8 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Check,
-  ChevronRight,
-  ChevronLeft,
   Sparkles,
   Zap,
   Bookmark,
@@ -11,6 +9,8 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n'
+import { en } from '@/locales/en'
+import { fa } from '@/locales/fa'
 import type { Language } from '@/types/link'
 
 interface OnboardingWizardProps {
@@ -22,15 +22,26 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   open,
   onComplete,
 }) => {
-  const { t, language, setLanguage } = useI18n()
+  const { language, setLanguage } = useI18n()
   const [step, setStep] = useState<1 | 2 | 3>(1)
-  const [selectedLang, setSelectedLang] = useState<Language>(language)
+  const [selectedLang, setSelectedLang] = useState<Language>(language || 'fa')
+
+  useEffect(() => {
+    if (open) {
+      setSelectedLang(language)
+    }
+  }, [open, language])
 
   if (!open) return null
+
+  const t = selectedLang === 'fa' ? fa : en
+  const isRtl = selectedLang === 'fa'
 
   const handleSelectLanguage = (lang: Language) => {
     setSelectedLang(lang)
     setLanguage(lang)
+    document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr'
+    document.documentElement.lang = lang
   }
 
   const handleFinish = () => {
@@ -38,7 +49,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-base-100 text-base-content antialiased select-none overflow-y-auto">
+    <div
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className="fixed inset-0 z-50 flex flex-col bg-base-100 text-base-content antialiased select-none overflow-y-auto"
+    >
       <div className="flex items-center justify-between px-5 pt-[max(2.5rem,calc(1.5rem+env(safe-area-inset-top,0px)))] pb-2 min-h-[4rem]">
         <div className="flex items-center gap-1.5">
           {[1, 2, 3].map((s) => (
