@@ -42,6 +42,7 @@ const MainApp: React.FC = () => {
   const [onboardingOpen, setOnboardingOpen] = useState(false)
 
   const lastBackPressRef = useRef<number>(0)
+  const pendingSecretLinkIdRef = useRef<string | null>(null)
 
   const applyTheme = useCallback((theme: AppSettings['theme']) => {
     const root = document.documentElement
@@ -80,7 +81,7 @@ const MainApp: React.FC = () => {
 
     const updatedList = await storageService.updateLink(updatedLink)
     if (settings.notificationsEnabled && nextReminder > 0) {
-      await notificationService.scheduleReminder(updatedLink, nextReminder)
+      await notificationService.scheduleReminder(updatedLink, nextReminder, settings)
     }
 
     await syncState(updatedList)
@@ -99,6 +100,20 @@ const MainApp: React.FC = () => {
       }
     } catch {}
   }, [])
+
+  const handleTapLink = useCallback(async (link: SavedLink) => {
+    await triggerHaptic(settings.hapticsEnabled)
+
+    const updatedLink: SavedLink = {
+      ...link,
+      openCount: (link.openCount || 0) + 1,
+      lastOpenedAt: Date.now(),
+    }
+    const updated = await storageService.updateLink(updatedLink)
+    await syncState(updated)
+
+    await notificationService.openLinkInBrowser(link.url)
+  }, [settings.hapticsEnabled, syncState])
 
   const initialLoadedRef = useRef(false)
   useEffect(() => {
@@ -122,9 +137,25 @@ const MainApp: React.FC = () => {
         }
 
         await notificationService.registerActionTypes()
-        notificationService.setupListeners((linkId, minutes) => {
-          handleSnooze(linkId, minutes)
-        })
+        notificationService.setupListeners(
+          async (linkId, url, isSecret) => {
+            if (isSecret) {
+              pendingSecretLinkIdRef.current = linkId
+              setAuthModalOpen(true)
+            } else {
+              const currentLinks = await storageService.getLinks()
+              const target = currentLinks.find((l) => l.id === linkId)
+              if (target) {
+                handleTapLink(target)
+              } else if (url) {
+                notificationService.openLinkInBrowser(url)
+              }
+            }
+          },
+          (linkId, minutes) => {
+            handleSnooze(linkId, minutes)
+          }
+        )
 
         await checkForSharedLink()
       } finally {
@@ -160,6 +191,7 @@ const MainApp: React.FC = () => {
     const backButtonListener = CapApp.addListener('backButton', () => {
       if (authModalOpen) {
         setAuthModalOpen(false)
+        pendingSecretLinkIdRef.current = null
       } else if (settingsSheetOpen) {
         setSettingsSheetOpen(false)
       } else if (addSheetOpen) {
@@ -242,7 +274,7 @@ const MainApp: React.FC = () => {
 
     const updated = await storageService.addLink(newLink)
     if (hasReminder && settings.notificationsEnabled && nextReminder > 0) {
-      await notificationService.scheduleReminder(newLink, nextReminder)
+      await notificationService.scheduleReminder(newLink, nextReminder, settings)
     }
 
     await syncState(updated)
@@ -266,7 +298,7 @@ const MainApp: React.FC = () => {
     const updated = await storageService.updateLink(updatedLink)
 
     if (hasReminder && settings.notificationsEnabled && nextReminder > 0) {
-      await notificationService.scheduleReminder(updatedLink, nextReminder)
+      await notificationService.scheduleReminder(updatedLink, nextReminder, settings)
     } else {
       await notificationService.cancelReminder(link.notificationId)
     }
@@ -306,6 +338,10 @@ const MainApp: React.FC = () => {
       setSelectedLink(updatedLink)
     }
 
+    if (!updatedLink.isPaused && !updatedLink.isDone && updatedLink.nextReminderAt > 0 && settings.notificationsEnabled) {
+      await notificationService.scheduleReminder(updatedLink, updatedLink.nextReminderAt, settings)
+    }
+
     toast.success(isNowSecret ? t.actions.moveToSecret : t.actions.moveToQueue)
   }
 
@@ -327,7 +363,7 @@ const MainApp: React.FC = () => {
       toast.success(t.toasts.linkPaused)
     } else {
       if (settings.notificationsEnabled && nextReminder > 0) {
-        await notificationService.scheduleReminder(updatedLink, nextReminder)
+        await notificationService.scheduleReminder(updatedLink, nextReminder, settings)
       }
       toast.success(t.toasts.linkResumed)
     }
@@ -373,7 +409,7 @@ const MainApp: React.FC = () => {
           }
           const restoredList = await storageService.updateLink(restored)
           if (settings.notificationsEnabled && !restored.isPaused && restored.nextReminderAt > 0) {
-            await notificationService.scheduleReminder(restored, restored.nextReminderAt)
+            await notificationService.scheduleReminder(restored, restored.nextReminderAt, settings)
           }
           await syncState(restoredList)
         },
@@ -395,7 +431,7 @@ const MainApp: React.FC = () => {
 
     const updated = await storageService.updateLink(restored)
     if (settings.notificationsEnabled && !restored.isPaused && nextReminder > 0) {
-      await notificationService.scheduleReminder(restored, nextReminder)
+      await notificationService.scheduleReminder(restored, nextReminder, settings)
     }
 
     await syncState(updated)
@@ -425,20 +461,6 @@ const MainApp: React.FC = () => {
     await syncState(fresh)
     await triggerHaptic(settings.hapticsEnabled)
     toast.success(t.toasts.historyCleared)
-  }
-
-  const handleTapLink = async (link: SavedLink) => {
-    await triggerHaptic(settings.hapticsEnabled)
-
-    const updatedLink: SavedLink = {
-      ...link,
-      openCount: (link.openCount || 0) + 1,
-      lastOpenedAt: Date.now(),
-    }
-    const updated = await storageService.updateLink(updatedLink)
-    await syncState(updated)
-
-    await notificationService.openLinkInBrowser(link.url)
   }
 
   const handleOpenActions = (link: SavedLink) => {
@@ -483,7 +505,7 @@ const MainApp: React.FC = () => {
     } else {
       for (const link of links) {
         if (!link.isPaused && !link.isDone && link.nextReminderAt > 0) {
-          await notificationService.scheduleReminder(link, link.nextReminderAt)
+          await notificationService.scheduleReminder(link, link.nextReminderAt, saved)
         }
       }
     }
@@ -653,10 +675,24 @@ const MainApp: React.FC = () => {
         open={authModalOpen}
         mode="unlock"
         settings={settings}
-        onClose={() => setAuthModalOpen(false)}
-        onAuthenticated={() => {
+        onClose={() => {
+          setAuthModalOpen(false)
+          pendingSecretLinkIdRef.current = null
+        }}
+        onAuthenticated={async () => {
           setIsVaultUnlocked(true)
           setIsVaultViewActive(true)
+          setAuthModalOpen(false)
+
+          if (pendingSecretLinkIdRef.current) {
+            const targetId = pendingSecretLinkIdRef.current
+            pendingSecretLinkIdRef.current = null
+            const freshLinks = await storageService.getLinks()
+            const secretLink = freshLinks.find((l) => l.id === targetId)
+            if (secretLink) {
+              handleTapLink(secretLink)
+            }
+          }
         }}
       />
 

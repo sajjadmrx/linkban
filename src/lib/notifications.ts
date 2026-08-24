@@ -1,6 +1,8 @@
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { Browser } from '@capacitor/browser'
 import type { SavedLink, AppSettings } from '@/types/link'
+import { en } from '@/locales/en'
+import { fa } from '@/locales/fa'
 
 export function computeNextReminderTime(intervalMinutes: number, fromTimestamp: number = Date.now(), settings?: AppSettings): number {
   if (intervalMinutes <= 0) {
@@ -83,7 +85,7 @@ export const notificationService = {
     } catch {}
   },
 
-  async scheduleReminder(link: SavedLink, reminderAt: number): Promise<void> {
+  async scheduleReminder(link: SavedLink, reminderAt: number, settings?: AppSettings): Promise<void> {
     try {
       await this.cancelReminder(link.notificationId)
 
@@ -91,21 +93,43 @@ export const notificationService = {
         return
       }
 
+      const lang = settings?.language === 'en' ? 'en' : 'fa'
+      const loc = lang === 'en' ? en : fa
+
+      let notifTitle: string
+      let notifBody: string
+      let extraData: Record<string, any>
+
+      if (link.isSecret) {
+        notifTitle = loc.notifications.secretReminderTitle
+        notifBody = loc.notifications.secretReminderBody
+        extraData = {
+          linkId: link.id,
+          isSecret: true,
+          interval: link.reminderInterval,
+        }
+      } else {
+        notifTitle = loc.notifications.reminderTitle.replace('{domain}', link.domain)
+        notifBody = link.title || link.url
+        extraData = {
+          linkId: link.id,
+          url: link.url,
+          isSecret: false,
+          interval: link.reminderInterval,
+        }
+      }
+
       await LocalNotifications.schedule({
         notifications: [
           {
             id: link.notificationId,
-            title: `Time to revisit: ${link.domain}`,
-            body: link.title || link.url,
+            title: notifTitle,
+            body: notifBody,
             schedule: { at: new Date(reminderAt) },
             actionTypeId: 'REVISIT_LINK_ACTION',
-            extra: {
-              linkId: link.id,
-              url: link.url,
-              interval: link.reminderInterval,
-            },
+            extra: extraData,
             smallIcon: 'ic_stat_revisit',
-            iconColor: '#2563EB',
+            iconColor: '#FF6B4A',
           }
         ]
       })
@@ -128,15 +152,26 @@ export const notificationService = {
     }
   },
 
-  setupListeners(onSnooze?: (linkId: string, minutes: number) => void): void {
+  setupListeners(
+    onOpenLink?: (linkId: string, url?: string, isSecret?: boolean) => void,
+    onSnooze?: (linkId: string, minutes: number) => void
+  ): void {
     try {
       LocalNotifications.addListener('localNotificationActionPerformed', async (notification) => {
         const actionId = notification.actionId
         const extra = notification.notification.extra
 
         if (actionId === 'OPEN_LINK' || actionId === 'tap') {
-          if (extra?.url) {
-            await this.openLinkInBrowser(extra.url)
+          if (extra?.isSecret) {
+            if (onOpenLink && extra.linkId) {
+              onOpenLink(extra.linkId, undefined, true)
+            }
+          } else {
+            if (onOpenLink && extra?.linkId) {
+              onOpenLink(extra.linkId, extra.url, false)
+            } else if (extra?.url) {
+              await this.openLinkInBrowser(extra.url)
+            }
           }
         } else if (actionId === 'SNOOZE_1H') {
           if (extra?.linkId && onSnooze) {

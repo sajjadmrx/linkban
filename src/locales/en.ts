@@ -214,7 +214,9 @@ export const en = {
     getStarted: "Get Started",
   },
   notifications: {
-    reminderTitle: "Time to revisit",
+    reminderTitle: "Time to revisit: {domain}",
+    secretReminderTitle: "Secret Vault",
+    secretReminderBody: "A private link is waiting in your vault",
     openAction: "Open link",
     snoozeAction: "Snooze 1h",
   },
