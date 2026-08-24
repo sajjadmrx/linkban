@@ -7,7 +7,6 @@ import {
   Bookmark,
   Eye,
   ExternalLink,
-  Sparkles,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n'
 import type { SavedLink } from '@/types/link'

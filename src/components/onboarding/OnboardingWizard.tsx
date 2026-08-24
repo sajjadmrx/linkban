@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import {
   Check,
-  Sparkles,
   Zap,
   Bookmark,
   Lock,
@@ -268,7 +267,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 onClick={handleFinish}
                 className="btn btn-primary flex-1 h-12 rounded-2xl font-bold text-white text-sm shadow-md gap-2"
               >
-                <Sparkles className="h-4 w-4" />
+                <Check className="h-4 w-4" />
                 <span>{t.onboarding.getStarted}</span>
               </button>
             </div>

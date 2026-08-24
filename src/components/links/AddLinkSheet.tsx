@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Plus, Clipboard, AlertCircle, Sparkles, ExternalLink, FileText, X, Lock } from 'lucide-react'
+import { Plus, Clipboard, AlertCircle, Loader2, ExternalLink, FileText, X, Lock } from 'lucide-react'
 import { ReminderPicker } from './ReminderPicker'
 import { useI18n } from '@/lib/i18n'
 import { isValidUrl, extractMetadata, normalizeUrl, extractDomain } from '@/lib/metadata'
@@ -229,7 +229,7 @@ export const AddLinkSheet: React.FC<AddLinkSheetProps> = ({
                   </p>
                 </div>
                 {loadingMetadata && (
-                  <Sparkles className="h-3.5 w-3.5 animate-spin text-primary shrink-0" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary shrink-0" />
                 )}
               </div>
             </div>

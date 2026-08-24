@@ -15,7 +15,7 @@ import {
   KeyRound,
   Fingerprint,
   Info,
-  Sparkles,
+  Compass,
 } from 'lucide-react'
 import { ReminderPicker } from '@/components/links/ReminderPicker'
 import { SecretAuthModal } from '@/components/secret/SecretAuthModal'
@@ -408,7 +408,7 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
                 className="w-full flex items-center justify-between p-3 rounded-2xl bg-base-200/80 hover:bg-base-200 text-xs font-bold text-base-content border border-base-300/60 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Compass className="h-4 w-4 text-primary" />
                   <span>{t.onboarding.featuresTitle}</span>
                 </div>
               </button>

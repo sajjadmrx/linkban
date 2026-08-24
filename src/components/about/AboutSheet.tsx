@@ -7,7 +7,6 @@ import {
   Heart,
   ExternalLink,
   ChevronLeft,
-  Sparkles,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n'
 import { notificationService } from '@/lib/notifications'
