@@ -14,9 +14,11 @@ import {
   Lock,
   KeyRound,
   Fingerprint,
+  Info,
 } from 'lucide-react'
 import { ReminderPicker } from '@/components/links/ReminderPicker'
 import { SecretAuthModal } from '@/components/secret/SecretAuthModal'
+import { AboutSheet } from '@/components/about/AboutSheet'
 import { biometricService } from '@/lib/biometrics'
 import { useI18n } from '@/lib/i18n'
 import type { AppSettings, ThemeMode, Language } from '@/types/link'
@@ -44,6 +46,7 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
   const { t, language, setLanguage } = useI18n()
   const [clearDialogOpen, setClearDialogOpen] = useState(false)
   const [pinModalOpen, setPinModalOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   const [pinModalMode, setPinModalMode] = useState<'setup' | 'change'>('setup')
   const [hasBiometrics, setHasBiometrics] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -391,6 +394,18 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
               <Trash2 className="h-3.5 w-3.5" />
               <span>{t.settings.clearData}</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setAboutOpen(true)}
+              className="w-full flex items-center justify-between p-3 rounded-2xl bg-base-200/80 hover:bg-base-200 text-xs font-bold text-base-content border border-base-300/60 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <Info className="h-4 w-4 text-primary" />
+                <span>{t.about.title}</span>
+              </div>
+              <span className="text-[11px] text-base-content/50 font-normal">1.0.0</span>
+            </button>
           </div>
 
           <div className="flex items-center justify-center gap-1.5 text-[11px] text-base-content/50 pt-1">
@@ -399,6 +414,11 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
           </div>
         </div>
       </div>
+
+      <AboutSheet
+        open={aboutOpen}
+        onClose={() => setAboutOpen(false)}
+      />
 
       <SecretAuthModal
         open={pinModalOpen}
