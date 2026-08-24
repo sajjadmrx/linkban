@@ -1,81 +1,74 @@
 # Linkban (لینکبان)
 
 <p align="center">
-  <img src="./public/banner.jpg" alt="Linkban Banner" width="100%" style="border-radius: 18px;" />
+  <img src="./public/banner.jpg" alt="Linkban Banner" width="100%" style="border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.06);" />
 </p>
 
 <p align="center">
-  <strong>Never lose a link you care about.</strong><br>
-  A calm, lightweight, and offline-first bookmark and reminder assistant for Android.
+  <strong>The quiet, distraction-free link assistant for Android.</strong><br>
+  Save web links in one second, set gentle reminders to revisit them later, or keep them safe in a private vault.
 </p>
 
 <p align="center">
-  <a href="#key-features">Key Features</a> •
-  <a href="#why-linkban">Why Linkban?</a> •
-  <a href="#onboarding-and-design">Design & Mascot</a> •
+  <a href="#how-linkban-helps-you">How It Helps You</a> •
+  <a href="#everyday-features">Everyday Features</a> •
+  <a href="#privacy-first">Privacy & Offline</a> •
   <a href="#support--connect">Support</a> •
-  <a href="#technical-architecture">Technical Details</a>
+  <a href="#for-developers">Technical Info</a>
 </p>
 
 ---
 
-## Overview
+## How Linkban Helps You
 
-We all come across interesting articles, videos, tutorials, and websites every day, but rarely have time to read them immediately. Browser tabs pile up, bookmarks get forgotten, and traditional "read-it-later" apps are often bloated with accounts, social feeds, and intrusive notifications.
+Do you constantly have 50+ open tabs in your mobile browser "to read later"? Or copy links into saved messages and forget about them?
 
-**Linkban** is built to solve this problem simply and privately. It acts as a personal queue for your web links, letting you save URLs in a split second, set gentle reminders, or store private links in a biometric-locked vault.
+**Linkban** brings calm to your reading list:
 
----
-
-## Key Features
-
-### ⚡ Quick Save from Anywhere
-- **System Share Menu**: Share any link directly from Chrome, Firefox, Telegram, or any other app.
-- **Contextual Text Selection**: Select any URL text in an app and tap **"Save to Linkban"** to save it instantly in the background without interrupting your workflow.
-- **Clipboard Detection**: Auto-detects copied links when you open the app.
-
-### ⏰ Smart Reminders & Flexible Bookmarks
-- **Customizable Intervals**: Set revisit timers for 30 minutes, 1 hour, 2 hours, 1 day, or custom dates.
-- **Save-Only Mode**: Save links purely as bookmarks with no notification noise.
-- **Quiet Hours**: Define silent periods so notifications never disturb your sleep or work.
-
-### 🔒 Secret Vault with Biometric Protection
-- **Fingerprint & PIN Security**: Lock sensitive or private links behind biometric authentication or a 4-digit PIN.
-- **Masked Notifications**: Reminders for secret links hide URLs and titles on the lock screen for complete privacy.
-- **Secure Opening**: Tapping a secret reminder opens the app directly into authentication before revealing the link.
-
-### 📊 Reading Stats & History Archive
-- **Visit Counter**: Automatically counts how many times you open each link.
-- **Visual Insights**: Clean, flat bar charts showcasing your top visited links and favorite domains.
-- **Completed Archive**: Mark links as done with confetti celebrations and restore them whenever needed.
-
-### 🌐 Bilingual & Fully Localized
-- **Persian & English Support**: Complete translation with natural, modern Persian tone and native RTL layout.
-- **Interactive Onboarding**: A friendly 3-step setup guide to choose your language and tour core features.
+1. **Stop tab hoarding**: Free your browser and battery by parking interesting articles, recipes, tools, and videos in Linkban.
+2. **Read at the right moment**: Set a reminder for when you actually have free time — whether that's in 2 hours, tonight, or this weekend.
+3. **Keep private links private**: Move sensitive discoveries or gift ideas to a secret vault locked with your fingerprint or PIN.
+4. **Zero clutter, zero pressure**: Clean list grouped by what is due now and what can wait. Mark links as read with one tap.
 
 ---
 
-## Why Linkban?
+## Everyday Features
 
-| Feature | Linkban | Traditional Read-Later Apps |
-| :--- | :--- | :--- |
-| **Account Requirement** | None (Zero login) | Required |
-| **Privacy & Storage** | 100% Local on Device | Cloud Servers & Telemetry |
-| **Secret Vault** | Built-in (Fingerprint / PIN) | Rare or Paid Tier |
-| **Background Text Save** | Native Android Action | Rare |
-| **Battery Impact** | Zero (Native Android Alarms) | Frequent background sync |
-| **Data Ownership** | One-tap Backup & Restore | Proprietary or Locked |
+### ⚡ Save in One Tap, Without Opening the App
+- **Share to Linkban**: Tap "Share" from Chrome, Firefox, Telegram, YouTube, or any app, and choose Linkban.
+- **Select Text & Save**: Highlight any URL on your screen and select **"Save to Linkban"** in the text menu. The link saves silently in the background so you never lose your reading flow.
+- **Instant Clipboard Paste**: Copied a link? Opening Linkban automatically offers to save it for you.
+
+### ⏰ Gentle Reminders or Simple Bookmarks
+- **Customizable Intervals**: Choose 30 minutes, 1 hour, 2 hours, 1 day, or set a custom time.
+- **Save-Only Mode**: Don't want reminders? Save links simply as clean bookmarks.
+- **Quiet Hours**: Define your sleeping hours so Linkban never rings or vibrates when you're resting.
+- **One-Tap Snooze**: Busy when a reminder arrives? Snooze it right from the notification with a single tap.
+
+### 🔒 Secret Vault & Biometric Lock
+- **Fingerprint & PIN Protected**: Keep sensitive links away from curious eyes.
+- **Hidden Notification Content**: When a secret link is due, the notification hides the website title and URL for your privacy.
+- **Biometric Unlock on Tap**: Tapping a secret reminder prompts your fingerprint before opening the page.
+
+### 📊 Reading History & Insights
+- **Visit Tracking**: See how many times you've visited your favorite articles and sites.
+- **Completed Archive**: Done with an article? Check it off and keep an organized archive you can revisit anytime.
+- **Visual Overview**: Simple, clean charts of your top visited websites and reading habits.
+
+### 🌐 Dual Language Experience
+- **English & Persian (فارسی)**: Full, conversational bilingual experience with natural text direction and typography.
+- **Quick 3-Step Setup**: Friendly initial onboarding to pick your language and tour key features.
 
 ---
 
-## Onboarding and Design
+## Privacy First — 100% Offline
 
-Linkban embraces a calm, flat pastel design palette with solid accents and strictly zero gradient distractions. Meet our friendly mascot, who guides you through initial setup and greets you across the app:
+Linkban is designed around your privacy and data ownership:
 
-<p align="center">
-  <img src="./public/mascot_waving.jpg" alt="Linkban Waving Mascot" width="220" style="border-radius: 20px; margin: 8px;" />
-  <img src="./public/mascot_explore.jpg" alt="Linkban Explorer Mascot" width="220" style="border-radius: 20px; margin: 8px;" />
-</p>
+- **No account needed**: Never sign up, enter an email, or remember a password.
+- **100% Offline**: All your links, notes, and history remain strictly on your phone.
+- **Zero tracking or ads**: No analytics, no third-party telemetry, no battery drain.
+- **Easy backup**: Export all your data to a backup file anytime with one tap and restore it on another device.
 
 ---
 
@@ -88,42 +81,31 @@ Linkban is crafted with care by **Sajjad**.
 
 ---
 
-## Technical Architecture
+## For Developers
 
-For developers and contributors interested in the underlying stack:
+For developers interested in the technical stack or building the project from source:
 
-### Stack & Technologies
-- **Frontend Framework**: [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)
-- **Build Tool**: [Vite 6](https://vitejs.dev/) with [Bun](https://bun.sh/) package manager
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) + [DaisyUI 5](https://daisyui.com/) (flat solid themes)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Mobile Runtime**: [Capacitor 8](https://capacitorjs.com/) (Android)
-- **Local Storage**: `@capacitor/preferences` (Offline key-value store)
-- **Native Android Extensions**:
-  - `ProcessText` activity for background text selection saving (`QuickSaveProcessTextActivity.java`).
-  - Native `LocalNotifications` with custom action categories and secure disguised payloads.
-  - Native Biometric / Fingerprint authentication integration.
+### Tech Stack
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, DaisyUI 5
+- **Mobile Container**: Capacitor 8 (Android)
+- **Native Android Features**: Background `ProcessText` activity for system text selection, native alarm scheduling, local notifications, and Android BiometricPrompt.
 
-### Development Setup
+### Build Instructions
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-username/linkban.git
-cd linkban
-
-# 2. Install dependencies
+# 1. Install dependencies using Bun
 bun install
 
-# 3. Start local development server
+# 2. Run local development server
 bun run dev
 
-# 4. Build web production bundle
+# 3. Build web production bundle
 bun run build
 
-# 5. Sync web assets with Capacitor Android
+# 4. Sync web assets with Capacitor Android
 bunx cap sync android
 
-# 6. Open in Android Studio or build APK directly
+# 5. Open project in Android Studio or compile APK
 bunx cap open android
 # or
 cd android && ./gradlew assembleDebug
