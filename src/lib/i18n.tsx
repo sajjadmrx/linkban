@@ -106,11 +106,21 @@ export const I18nProvider: React.FC<{
     const diffMins = Math.floor(diffMs / (60 * 1000))
 
     if (diffMins < 1) return t.intervals.now
-    if (diffMins < 60) return `${formatNumber(diffMins)} ${t.add.minutes}`
+    if (diffMins < 60) {
+      return language === 'fa'
+        ? `${formatNumber(diffMins)} دقیقه پیش`
+        : `${formatNumber(diffMins)}m ago`
+    }
     const diffHours = Math.floor(diffMins / 60)
-    if (diffHours < 24) return `${formatNumber(diffHours)} ${t.add.hours}`
+    if (diffHours < 24) {
+      return language === 'fa'
+        ? `${formatNumber(diffHours)} ساعت پیش`
+        : `${formatNumber(diffHours)}h ago`
+    }
     const diffDays = Math.floor(diffHours / 24)
-    return `${formatNumber(diffDays)} ${t.add.days}`
+    return language === 'fa'
+      ? `${formatNumber(diffDays)} روز پیش`
+      : `${formatNumber(diffDays)}d ago`
   }
 
   const formatDateTime = (timestamp: number): string => {

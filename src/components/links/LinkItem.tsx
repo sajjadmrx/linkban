@@ -14,7 +14,7 @@ export const LinkItem: React.FC<LinkItemProps> = ({
   onTap,
   onOpenActions,
 }) => {
-  const { t, formatNumber, formatNextReminder } = useI18n()
+  const { t, formatNumber, formatNextReminder, formatTimeAgo } = useI18n()
   const [imgError, setImgError] = useState(false)
   const timerRef = useRef<number | null>(null)
 
@@ -118,6 +118,15 @@ export const LinkItem: React.FC<LinkItemProps> = ({
               <span className="flex items-center text-[11px] text-base-content/60 font-semibold gap-0.5">
                 <Eye className="h-3 w-3 text-base-content/40" />
                 <span>{formatNumber(link.openCount)}</span>
+              </span>
+            </>
+          )}
+
+          {link.createdAt > 0 && (
+            <>
+              <span className="text-base-content/20">•</span>
+              <span className="text-[11px] text-base-content/50 truncate">
+                {formatTimeAgo(link.createdAt)}
               </span>
             </>
           )}

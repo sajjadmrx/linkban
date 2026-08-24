@@ -97,6 +97,7 @@ export const en = {
     moveToSecret: "Move to Secret Vault",
     moveToQueue: "Move to Main Queue",
     openedCount: "Opened {count} times",
+    savedAt: "Saved on",
   },
   history: {
     title: "History",

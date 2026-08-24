@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Eye,
   Bookmark,
+  Calendar,
 } from 'lucide-react'
 import { CustomReminderSheet } from './CustomReminderSheet'
 import { useI18n } from '@/lib/i18n'
@@ -50,7 +51,7 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
   onDelete,
   onToggleSecret,
 }) => {
-  const { t, formatNumber, formatInterval, formatNextReminder } = useI18n()
+  const { t, formatNumber, formatInterval, formatNextReminder, formatDateTime } = useI18n()
   const [changeReminderOpen, setChangeReminderOpen] = useState(false)
   const [snoozePickerOpen, setSnoozePickerOpen] = useState(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
@@ -133,6 +134,18 @@ export const LinkActionsSheet: React.FC<LinkActionsSheetProps> = ({
               </div>
             </div>
           </div>
+
+          {link.createdAt > 0 && (
+            <div className="mx-2 px-3 py-2 rounded-xl bg-base-200/50 border border-base-300/40 flex items-center justify-between text-xs text-base-content/70">
+              <span className="flex items-center gap-1.5 font-medium text-[11px]">
+                <Calendar className="h-3.5 w-3.5 text-primary/80" />
+                <span>{t.actions.savedAt}:</span>
+              </span>
+              <span className="font-bold text-xs text-base-content">
+                {formatDateTime(link.createdAt)}
+              </span>
+            </div>
+          )}
 
           {link.notes && (
             <div className="mx-2 p-2.5 rounded-xl bg-base-200/50 border border-base-300/40 text-xs text-base-content/80">

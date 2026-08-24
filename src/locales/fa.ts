@@ -99,6 +99,7 @@ export const fa: Translations = {
     moveToSecret: "انتقال به صندوقچه مخفی",
     moveToQueue: "انتقال به صف عمومی",
     openedCount: "{count} بار باز شده",
+    savedAt: "ذخیره در",
   },
   history: {
     title: "تاریخچه",
