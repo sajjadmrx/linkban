@@ -55,7 +55,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
   return (
     <div
-      className="flex flex-col min-h-[calc(100vh-3rem)]"
+      className="flex flex-col min-h-full"
       style={{ paddingBottom: 'max(6rem, calc(5rem + env(safe-area-inset-bottom, 0px)))' }}
     >
       <div className="px-4 py-2.5 flex items-center justify-between border-b border-base-200 bg-base-200/30">

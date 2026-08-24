@@ -90,7 +90,7 @@ export const LinkList: React.FC<LinkListProps> = ({
 
   return (
     <div
-      className="flex flex-col min-h-[calc(100vh-3rem)]"
+      className="flex flex-col min-h-full"
       style={{ paddingBottom: 'max(6rem, calc(5rem + env(safe-area-inset-bottom, 0px)))' }}
     >
       <div className="flex-1">

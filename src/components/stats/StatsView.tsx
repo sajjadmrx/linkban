@@ -58,7 +58,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
 
   return (
     <div
-      className="flex flex-col min-h-[calc(100vh-3rem)] p-4 space-y-5 select-none max-w-md mx-auto"
+      className="flex flex-col min-h-full p-4 space-y-5 select-none max-w-md mx-auto"
       style={{ paddingBottom: 'max(6rem, calc(5rem + env(safe-area-inset-bottom, 0px)))' }}
     >
       <div className="grid grid-cols-2 gap-2.5">

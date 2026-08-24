@@ -562,7 +562,7 @@ const MainApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 text-base-content antialiased flex flex-col">
+    <div className="h-screen h-dvh max-h-screen max-h-dvh bg-base-100 text-base-content antialiased flex flex-col overflow-hidden">
       <Header
         activeCount={activeLinksCount}
         currentTab={currentTab}
@@ -574,7 +574,7 @@ const MainApp: React.FC = () => {
         onOpenSettings={() => setSettingsSheetOpen(true)}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
         {isVaultViewActive ? (
           <LinkList
             links={displayedLinks}
