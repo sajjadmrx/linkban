@@ -30,6 +30,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Sync & Commit Version
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.version != ''
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          RAW_VERSION="$INPUT_VERSION"
+          CLEAN_VERSION="${RAW_VERSION#v}"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull origin ${{ github.ref_name }} --rebase || true
+          
+          node -e "
+            const fs = require('fs');
+            const pkgPath = './package.json';
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            pkg.version = '$CLEAN_VERSION';
+            fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+            
+            const gradlePath = './android/app/build.gradle';
+            let gradle = fs.readFileSync(gradlePath, 'utf8');
+            gradle = gradle.replace(/versionName \".*\"/, 'versionName \"' + '$CLEAN_VERSION' + '\"');
+            gradle = gradle.replace(/versionCode (\d+)/, (match, p1) => 'versionCode ' + (parseInt(p1, 10) + 1));
+            fs.writeFileSync(gradlePath, gradle);
+          "
+          
+          git add package.json android/app/build.gradle
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(release): bump version to v$CLEAN_VERSION"
+            git pull origin ${{ github.ref_name }} --rebase || true
+            git push origin HEAD:${{ github.ref_name }}
+          fi
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
@@ -70,21 +104,30 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
-          ./gradlew assembleRelease
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            ./gradlew assembleRelease \
+              -Pandroid.injected.signing.store.file=$(pwd)/app/keystore.jks \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+          else
+            ./gradlew assembleRelease
+          fi
 
       - name: Prepare Release Artifacts
         env:
           RELEASE_VERSION: ${{ github.event.inputs.version || github.ref_name }}
           BUILD_TYPE: ${{ github.event.inputs.release_type || 'release' }}
         run: |
-          mkdir -p release-assets
+          mkdir -p "$GITHUB_WORKSPACE/release-assets"
           VERSION="${RELEASE_VERSION:-v1.0.0}"
           TYPE="${BUILD_TYPE}"
-          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
-            cp android/app/build/outputs/apk/release/app-release.apk "release-assets/linkban-${VERSION}-${TYPE}.apk"
-          elif [ -f android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
-            cp android/app/build/outputs/apk/release/app-release-unsigned.apk "release-assets/linkban-${VERSION}-${TYPE}-unsigned.apk"
-          fi
+          cd android/app/build/outputs/apk/release
+          for file in *.apk; do
+            if [ -f "$file" ]; then
+              cp "$file" "$GITHUB_WORKSPACE/release-assets/linkban-${VERSION}-${TYPE}-${file}"
+            fi
+          done
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
