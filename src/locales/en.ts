@@ -169,7 +169,7 @@ export const en = {
     haptics: "Haptic feedback",
     hapticsDesc: "Vibrate on interactions",
     dataSection: "Data",
-    exportData: "Export backup (JSON)",
+    exportData: "Export backup",
     importData: "Import backup",
     clearData: "Clear all saved links",
     clearDataConfirmTitle: "Clear all links?",

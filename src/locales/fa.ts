@@ -171,7 +171,7 @@ export const fa: Translations = {
     haptics: "بازخورد لرزشی",
     hapticsDesc: "لرزش کوتاه در هنگام لمس",
     dataSection: "داده‌ها",
-    exportData: "خروجی فایل پشتیبان (JSON)",
+    exportData: "خروجی فایل پشتیبان",
     importData: "بازیابی فایل پشتیبان",
     clearData: "پاک کردن همه لینک‌ها",
     clearDataConfirmTitle: "پاک کردن تمام لینک‌ها؟",

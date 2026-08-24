@@ -99,10 +99,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-3 text-start">
-                  <span className="text-xl">🇮🇷</span>
+                  <span className="text-2xl">🇮🇷</span>
                   <div>
-                    <p className="font-bold text-sm text-base-content">فارسی</p>
-                    <p className="text-[11px] text-base-content/50">Persian (RTL)</p>
+                    <p className="font-bold text-base text-base-content">فارسی</p>
+                    <p className="text-xs text-base-content/50">Persian</p>
                   </div>
                 </div>
                 {selectedLang === 'fa' && <Check className="h-5 w-5 text-primary" />}
@@ -118,10 +118,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-3 text-start">
-                  <span className="text-xl">🇬🇧</span>
+                  <span className="text-2xl">🇬🇧</span>
                   <div>
-                    <p className="font-bold text-sm text-base-content">English</p>
-                    <p className="text-[11px] text-base-content/50">English (LTR)</p>
+                    <p className="font-bold text-base text-base-content">English</p>
+                    <p className="text-xs text-base-content/50">انگلیسی</p>
                   </div>
                 </div>
                 {selectedLang === 'en' && <Check className="h-5 w-5 text-primary" />}
