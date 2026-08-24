@@ -15,6 +15,7 @@ import {
   KeyRound,
   Fingerprint,
   Info,
+  Sparkles,
 } from 'lucide-react'
 import { ReminderPicker } from '@/components/links/ReminderPicker'
 import { SecretAuthModal } from '@/components/secret/SecretAuthModal'
@@ -32,6 +33,7 @@ interface SettingsSheetProps {
   onExportData: () => Promise<void>
   onImportData: (jsonStr: string) => Promise<void>
   onClearAllData: () => Promise<void>
+  onOpenOnboarding?: () => void
 }
 
 export const SettingsSheet: React.FC<SettingsSheetProps> = ({
@@ -42,6 +44,7 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
   onExportData,
   onImportData,
   onClearAllData,
+  onOpenOnboarding,
 }) => {
   const { t, language, setLanguage } = useI18n()
   const [clearDialogOpen, setClearDialogOpen] = useState(false)
@@ -394,6 +397,22 @@ export const SettingsSheet: React.FC<SettingsSheetProps> = ({
               <Trash2 className="h-3.5 w-3.5" />
               <span>{t.settings.clearData}</span>
             </button>
+
+            {onOpenOnboarding && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  onOpenOnboarding()
+                }}
+                className="w-full flex items-center justify-between p-3 rounded-2xl bg-base-200/80 hover:bg-base-200 text-xs font-bold text-base-content border border-base-300/60 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span>{t.onboarding.featuresTitle}</span>
+                </div>
+              </button>
+            )}
 
             <button
               type="button"

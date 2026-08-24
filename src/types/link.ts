@@ -34,6 +34,7 @@ export interface AppSettings {
   hapticsEnabled: boolean
   secretPasscode?: string
   secretBiometricsEnabled?: boolean
+  hasCompletedOnboarding?: boolean
 }
 
 export type LinkFilter = 'active' | 'all' | 'paused' | 'done' | 'secret'

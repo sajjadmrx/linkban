@@ -7,6 +7,7 @@ import { AddLinkSheet } from '@/components/links/AddLinkSheet'
 import { LinkActionsSheet } from '@/components/links/LinkActionsSheet'
 import { SettingsSheet } from '@/components/settings/SettingsSheet'
 import { SecretAuthModal } from '@/components/secret/SecretAuthModal'
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
 import { I18nProvider, useI18n } from '@/lib/i18n'
 import { storageService, defaultSettings } from '@/lib/storage'
 import {
@@ -38,6 +39,7 @@ const MainApp: React.FC = () => {
   const [isVaultUnlocked, setIsVaultUnlocked] = useState(false)
   const [isVaultViewActive, setIsVaultViewActive] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [onboardingOpen, setOnboardingOpen] = useState(false)
 
   const lastBackPressRef = useRef<number>(0)
 
@@ -110,6 +112,10 @@ const MainApp: React.FC = () => {
         setSettings(savedSettings)
         setLanguage(savedSettings.language)
         applyTheme(savedSettings.theme)
+
+        if (!savedSettings.hasCompletedOnboarding) {
+          setOnboardingOpen(true)
+        }
 
         await notificationService.registerActionTypes()
         notificationService.setupListeners((linkId, minutes) => {
@@ -622,6 +628,21 @@ const MainApp: React.FC = () => {
         onExportData={handleExportData}
         onImportData={handleImportData}
         onClearAllData={handleClearAllData}
+        onOpenOnboarding={() => setOnboardingOpen(true)}
+      />
+
+      <OnboardingWizard
+        open={onboardingOpen}
+        onComplete={async (chosenLang) => {
+          const updated = {
+            ...settings,
+            language: chosenLang,
+            hasCompletedOnboarding: true,
+          }
+          await handleUpdateSettings(updated)
+          setLanguage(chosenLang)
+          setOnboardingOpen(false)
+        }}
       />
 
       <SecretAuthModal
