@@ -26,19 +26,15 @@ export const I18nProvider: React.FC<{
   initialLanguage?: Language
   onLanguageChange?: (lang: Language) => void
   children: React.ReactNode
-}> = ({ initialLanguage = 'en', onLanguageChange, children }) => {
+}> = ({ initialLanguage = 'fa', onLanguageChange, children }) => {
   const [language, setLanguageState] = useState<Language>(initialLanguage)
 
-  useEffect(() => {
-    setLanguageState(initialLanguage)
-  }, [initialLanguage])
-
-  const setLanguage = (lang: Language) => {
+  const setLanguage = React.useCallback((lang: Language) => {
     setLanguageState(lang)
     if (onLanguageChange) {
       onLanguageChange(lang)
     }
-  }
+  }, [onLanguageChange])
 
   const dir: 'ltr' | 'rtl' = language === 'fa' ? 'rtl' : 'ltr'
   const t: Translations = language === 'fa' ? fa : en

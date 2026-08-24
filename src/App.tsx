@@ -100,7 +100,11 @@ const MainApp: React.FC = () => {
     } catch {}
   }, [])
 
+  const initialLoadedRef = useRef(false)
   useEffect(() => {
+    if (initialLoadedRef.current) return
+    initialLoadedRef.current = true
+
     const loadInitialData = async () => {
       try {
         const [savedLinks, savedSettings] = await Promise.all([
@@ -129,7 +133,7 @@ const MainApp: React.FC = () => {
     }
 
     loadInitialData()
-  }, [applyTheme, checkForSharedLink, handleSnooze, setLanguage])
+  }, [])
 
   useEffect(() => {
     const stateChangeListener = CapApp.addListener('appStateChange', async (state) => {

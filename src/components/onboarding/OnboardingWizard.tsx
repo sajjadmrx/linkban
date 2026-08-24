@@ -28,9 +28,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
   useEffect(() => {
     if (open) {
-      setSelectedLang(language)
+      setSelectedLang(language || 'fa')
+      setStep(1)
     }
-  }, [open, language])
+  }, [open])
 
   if (!open) return null
 
@@ -40,8 +41,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const handleSelectLanguage = (lang: Language) => {
     setSelectedLang(lang)
     setLanguage(lang)
-    document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr'
-    document.documentElement.lang = lang
   }
 
   const handleFinish = () => {
