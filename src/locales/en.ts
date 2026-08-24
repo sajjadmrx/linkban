@@ -1,6 +1,6 @@
 export const en = {
   app: {
-    name: "Yadban",
+    name: "Linkban",
     tagline: "Never lose a link you care about",
     back: "Back",
     exitPrompt: "Press back again to exit",
@@ -178,12 +178,12 @@ export const en = {
     version: "Version",
     offlineFirst: "100% offline & local",
     privacy: "No tracking, no account required.",
-    aboutApp: "About Yadban",
+    aboutApp: "About Linkban",
   },
   about: {
-    title: "About Yadban",
+    title: "About Linkban",
     tagline: "Never lose a link you care about",
-    description: "Yadban is a lightweight, offline-first link bookmark and reminder assistant designed to help you catch up on what matters without clutter.",
+    description: "Linkban is a lightweight, offline-first link bookmark and reminder assistant designed to help you catch up on what matters without clutter.",
     offlineFeature: "100% Offline & Private",
     offlineFeatureDesc: "All links, notes, and visit history remain safely on your device.",
     noAccountFeature: "No Account Required",

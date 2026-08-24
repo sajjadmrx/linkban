@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.revisit.app',
-  appName: 'یادبان',
+  appName: 'لینکبان',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

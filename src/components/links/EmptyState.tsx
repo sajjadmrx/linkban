@@ -15,7 +15,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onAddClick, isVault }) =
       <div className="relative">
         <img
           src="/mascot.jpg"
-          alt="Yadban Mascot"
+          alt="Linkban Mascot"
           className="h-28 w-28 object-contain rounded-3xl shadow-sm"
         />
       </div>

@@ -39,7 +39,7 @@ export const AboutSheet: React.FC<AboutSheetProps> = ({ open, onClose }) => {
             <div className="h-20 w-20 rounded-3xl overflow-hidden shadow-md border-2 border-base-300 bg-[#FFF7F2] p-0.5">
               <img
                 src="/mascot.jpg"
-                alt="Yadban Mascot"
+                alt="Linkban Mascot"
                 className="h-full w-full object-cover rounded-[22px]"
               />
             </div>

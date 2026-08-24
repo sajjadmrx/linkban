@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Yadban</string>
-    <string name="title_activity_main">Yadban</string>
+    <string name="app_name">Linkban</string>
+    <string name="title_activity_main">Linkban</string>
     <string name="package_name">com.revisit.app</string>
     <string name="custom_url_scheme">com.revisit.app</string>
-    <string name="save_to_yadban">Save to Yadban</string>
-    <string name="toast_saved">Yadban: Saved ✓ (%1$s)</string>
-    <string name="toast_no_link_found">Yadban: No link found in selected text</string>
-    <string name="toast_already_saved">Yadban: This link is already saved</string>
-    <string name="toast_save_error">Yadban: Error saving link</string>
+    <string name="save_to_yadban">Save to Linkban</string>
+    <string name="toast_saved">Linkban: Saved ✓ (%1$s)</string>
+    <string name="toast_no_link_found">Linkban: No link found in selected text</string>
+    <string name="toast_already_saved">Linkban: This link is already saved</string>
+    <string name="toast_save_error">Linkban: Error saving link</string>
 </resources>
